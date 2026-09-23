@@ -6,7 +6,7 @@ from itsdangerous import BadSignature, URLSafeSerializer
 
 from ..config import ADMIN_EMAILS, SECRET_KEY, TRIAL_DAYS
 
-COOKIE = "ts_session"
+COOKIE = "ef_session"
 _signer = URLSafeSerializer(SECRET_KEY, salt="session")
 
 

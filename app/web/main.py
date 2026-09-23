@@ -1,4 +1,4 @@
-"""Toronto Signals web app: Teardown Feed + Opening Soon."""
+"""EarlyFiled web app: Teardown Feed + Opening Soon."""
 import csv
 import datetime as dt
 import io
@@ -19,7 +19,7 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s %(name)s %(levelname
 log = logging.getLogger("web")
 
 HERE = Path(__file__).parent
-app = FastAPI(title="Toronto Signals", docs_url=None, redoc_url=None)
+app = FastAPI(title="EarlyFiled", docs_url=None, redoc_url=None)
 app.mount("/static", StaticFiles(directory=str(HERE / "static")), name="static")
 templates = Jinja2Templates(directory=str(HERE / "templates"))
 templates.env.globals.update(
@@ -260,7 +260,7 @@ def login_post(c: Ctx = Depends(ctx), email: str = Form(...), next: str = Form("
     token = auth.create_magic_link(c.con, email)
     link = f"{config.BASE_URL}/auth/{token}?next={next}"
     html = templates.get_template("email_login.html").render(link=link, base_url=config.BASE_URL)
-    r = emailer.send(email, "Your sign-in link for Toronto Signals", html, f"Sign in: {link}")
+    r = emailer.send(email, "Your sign-in link for EarlyFiled", html, f"Sign in: {link}")
     dev_link = link if (config.DEV_MODE and not r["delivered"]) else None
     return render(c, "login.html", next=next, sent=email, dev_link=dev_link)
 

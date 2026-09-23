@@ -1,85 +1,100 @@
-# Launch checklist
+# Launch runbook (GitHub Education Pack path)
 
-Everything in the codebase is done. What's left needs accounts in your name, which I can't create for you. Budget about 90 minutes. Total running cost is roughly $8 to $15 a month until you have customers.
+Everything in the code is done and tested locally. The remaining steps need accounts in your name, which I can't create for you (my rules bar me from creating accounts or handling passwords). Each step is a few clicks, and everything after account creation is automated by a script in this repo. Total time: about an hour. Running cost: **$0 for 12 months** on the student offers, then roughly $10/month.
 
-## 1. Domain (10 min)
+Brand: **EarlyFiled**. Checked 2026-09-23: no company, product or trademark found under that name; `earlyfiled.com`, `.ca`, `.app`, `.io`, `.dev`, `.me` all unregistered; `@earlyfiled` free on X, LinkedIn and GitHub. Rejected: "FirstFiled" (an existing US data company), "PermitPulse" (five companies), "Toronto Signals" (generic, .com taken, a band and a security firm use "Signals").
 
-Buy a domain. Suggestions to check: `torontosignals.ca`, `teardownfeed.com`, `openingsoon.ca`. Namecheap or Cloudflare Registrar are fine. You'll point it at the host in step 3.
+## 0. Verify the Education Pack (5 min)
 
-## 2. Email sending: Resend (10 min)
+education.github.com/pack → "Get your pack". You need your school email or proof of enrolment. Approval is usually instant to 3 days. Everything below assumes it's approved.
 
-1. Sign up at resend.com (free tier: 3,000 emails/month, plenty).
-2. Add your domain and put the DNS records they give you into your registrar.
-3. Create an API key. Keep it for step 3.
-4. Set `EMAIL_FROM="Toronto Signals <hello@yourdomain.ca>"`.
+## 1. Push the code to GitHub (5 min)
 
-Until this is done the app still works: sign-in links show on screen in dev mode and digests are written to the log.
+Create an empty repo at github.com/new named `earlyfiled` (public is simplest for the server install; private works with a deploy token). Then:
 
-## 3. Hosting: Fly.io (20 min)
+```bash
+cd ~/Developer/earlyfiled
+git remote add origin https://github.com/YOUR_GITHUB_USER/earlyfiled.git
+git push -u origin main
+```
 
-1. Install flyctl (`brew install flyctl` or the script on fly.io), `fly auth signup`.
-2. In this folder:
+## 2. Domain: Name.com, free for a year (10 min)
+
+1. education.github.com/pack/offers → find **Name.com** → "Get access" (it links you into name.com with the promo attached).
+2. Search **earlyfiled** and pick **.app** (Google-run, HTTPS-only, clean, on the free list). If `.app` isn't shown as free, `.live` or `.dev` are the next choices.
+3. Check out; the code applies itself. Turn **auto-renew off** on the domain so you're not charged next year without deciding.
+4. Later, when there's revenue, buy `earlyfiled.com` and `earlyfiled.ca` (about $12 each per year) and point them at the same server. Not needed to launch.
+
+Second free domain if you want it: Namecheap gives Pack members a free **.me** (nc.me). `earlyfiled.me` is available. Optional.
+
+## 3. Server: Azure for Students, free for a year (15 min)
+
+DigitalOcean left the Pack on Aug 1 2026, so Azure is the free path. Azure for Students gives $100 credit plus 750 free hours a month of a B1s VM for 12 months, no credit card, age 18+.
+
+1. azure.microsoft.com/free/students → sign in with the same email → verify with your school.
+2. Portal → **Create a resource → Virtual machine**:
+   - Image: **Ubuntu Server 24.04 LTS**
+   - Size: **Standard_B1s** (shows as "free services eligible")
+   - Authentication: SSH public key (let it generate one and download it)
+   - Inbound ports: **HTTP (80), HTTPS (443), SSH (22)**
+   - **Advanced tab → Custom data**: paste the contents of `deploy/cloud-init.yaml` after replacing `YOUR_GITHUB_USER`, `YOUR_REPO` (earlyfiled) and `YOUR_DOMAIN` (earlyfiled.app).
+3. Create. Note the **public IP** on the VM overview page. The install runs on its own for about 5 minutes (log: `/var/log/signals-install.log` on the VM).
+
+Anything else with Ubuntu + a persistent disk works the same way (Hetzner CX22 is about $4/month if you'd rather pay than use Azure).
+
+## 4. DNS (2 min)
+
+At Name.com → your domain → DNS records: add an **A record**, host `@`, pointing at the VM's public IP, and a second A record for host `www`. Within a few minutes Caddy on the server fetches a certificate and https://earlyfiled.app is live.
+
+## 5. Email: Resend, free tier (10 min)
+
+1. resend.com → sign up → **API Keys** → create one (full access).
+2. On your laptop:
    ```bash
-   fly launch --copy-config --no-deploy      # accept the app name or choose one; region yyz (Toronto)
-   fly volumes create data --size 3 --region yyz
+   cd ~/Developer/earlyfiled
+   RESEND_API_KEY=re_xxx python3 scripts/resend_setup.py earlyfiled.app
    ```
-3. Set secrets (generate the two random strings with `openssl rand -hex 32`):
-   ```bash
-   fly secrets set \
-     SECRET_KEY=<random> \
-     CRON_SECRET=<random> \
-     ADMIN_EMAILS=you@example.com \
-     BASE_URL=https://yourdomain.ca \
-     RESEND_API_KEY=<from step 2> \
-     EMAIL_FROM="Toronto Signals <hello@yourdomain.ca>"
-   ```
-4. `fly deploy`. First boot downloads the data and builds the index (2 to 3 minutes). Watch with `fly logs`.
-5. `fly certs add yourdomain.ca` and add the CNAME/A records it prints to your registrar.
-6. Open the site, sign in with your admin email, check `/admin`.
+   It registers the domain and prints the DNS records (SPF, DKIM, MX). Add them at Name.com, then re-run the script; when it prints `verified`, sign-in links and digests go out for real.
 
-The Dockerfile sets `ENABLE_SCHEDULER=1`, so the machine refreshes data and sends digests every morning after 6:00 Toronto time on its own. Keep `min_machines_running = 1` in `fly.toml` so it never sleeps through that.
+## 6. Configure the server (5 min)
 
-Alternative hosts that work with the same Dockerfile: Railway (add a volume at `/data`), Render (persistent disk at `/data`). Don't use a host without persistent disk; the SQLite file is the product.
+SSH in (`ssh azureuser@<ip>` with the key you downloaded) and run:
 
-## 4. Payments: Stripe (30 min)
+```bash
+sudo /opt/signals/deploy/configure.sh
+```
 
-1. Sign up at stripe.com, complete the business profile (you can operate as a sole proprietor under your own name).
-2. Products → create three recurring monthly prices in CAD:
-   - Teardown Feed, $79/month
-   - Opening Soon, $99/month
-   - Both feeds, $149/month
-   Copy the three `price_...` IDs.
-3. Developers → Webhooks → add endpoint `https://yourdomain.ca/billing/webhook` with events `checkout.session.completed`, `customer.subscription.created`, `customer.subscription.updated`, `customer.subscription.deleted`. Copy the signing secret.
-4. Settings → Billing → Customer portal: enable it so subscribers can cancel and update cards themselves.
-5. Settings → Tax: turn on automatic tax if you want Stripe to add HST, otherwise add 13% to the prices.
-6. Set the secrets:
-   ```bash
-   fly secrets set STRIPE_SECRET_KEY=sk_live_... STRIPE_WEBHOOK_SECRET=whsec_... \
-     STRIPE_PRICE_TEARDOWN=price_... STRIPE_PRICE_OPENINGS=price_... STRIPE_PRICE_BUNDLE=price_...
-   ```
-7. Test with a Stripe test card in test mode first (use `sk_test_` keys and test price IDs), then switch to live.
+It asks for your admin email, the public URL, the Resend key and the from-address, writes them into `/opt/signals/.env`, and restarts the app. Then sign in at https://earlyfiled.app/login with your admin email; the link arrives by email.
 
-Until this is done the Subscribe buttons say billing isn't switched on and trials keep working. You can also just extend someone's trial by hand in SQLite if you want to invoice manually at first.
+## 7. Payments: Stripe (20 min, can wait until the first customer)
 
-## 5. Before the first customer
+1. stripe.com → sign up → complete the business profile (sole proprietor under your own name is fine; you'll need your SIN for tax reporting).
+2. Developers → API keys → copy the **secret key**. Use the **test** key first.
+3. Re-run `sudo /opt/signals/deploy/configure.sh` and paste it when asked. The script calls Stripe and creates the three CAD monthly prices ($79 / $99 / $149), the webhook endpoint, and stores the IDs and signing secret. Nothing to click in the Stripe dashboard.
+4. Settings → Billing → Customer portal → turn it on (lets subscribers cancel themselves).
+5. Test a checkout with card `4242 4242 4242 4242`, then repeat step 3 with the live key.
 
-- Change `hello@example.com` in `app/web/templates/base.html` to your real contact address.
-- Read `/terms` once and make sure you're happy to stand behind it.
-- Register for an HST number once you pass $30,000 in revenue in four consecutive quarters (CRA rule); before that you don't have to charge HST.
-- Pick your first 30 prospects. For Teardown Feed: search Google Maps for "pool builder Toronto", "landscaping Leaside", "fence company Toronto", "custom closets Toronto". For Opening Soon: "POS systems Toronto", "restaurant insurance broker Toronto", "commercial cleaning Toronto", "restaurant supply Toronto".
+Until this step, Subscribe buttons say billing isn't switched on and free trials keep working.
 
-## 6. The first email (copy this)
+## 8. Before the first outreach email
 
-Subject: 5 Stratheden Rd just filed a $2.5M teardown
+- Set `hello@example.com` in `app/web/templates/base.html` to a real address.
+- Read `/terms` once.
+- HST: not required until you pass $30,000 revenue in four consecutive quarters.
 
-Hi —, I run a small feed that reads Toronto's permit filings every morning and flags the teardowns, new houses and big additions in your area. Last week in Leaside, Lawrence Park and Moore Park that was 5 new houses, 6 demolitions and 2 garden suites, with the builder's name on each. Here's the public version: [link to /app/teardown filtered to their neighbourhoods]. Subscribers see filings the morning after they land. Two weeks free, no card, if you want to see whether it pays for itself. — Jason
+## 9. First 30 prospects
 
-## 7. Map tiles
+Teardown Feed: Google Maps "pool builder Toronto", "landscaping Leaside", "fence company Toronto", "custom closets Toronto", "window and door company Toronto". Opening Soon: "POS systems Toronto", "restaurant insurance broker Toronto", "commercial cleaning Toronto", "restaurant supply Toronto", "commercial signage Toronto".
 
-The maps use OpenStreetMap's public tile server, which is fine for a small site but is not meant for heavy commercial use. When you have paying customers, sign up for a free MapTiler or Stadia Maps key and swap the tile URL in `app/web/static/app.js` (two places). Ten minutes.
+Email template:
 
-## 8. Watch these
+> Subject: 5 Stratheden Rd just filed a $2.5M teardown
+>
+> Hi —, I run a small feed that reads Toronto's permit filings every morning and flags the teardowns, new houses and big additions in your area. Last week in Leaside, Lawrence Park and Moore Park that was 5 new houses, 6 demolitions and 2 garden suites, with the builder's name on each. Here's the public version: https://earlyfiled.app/app/teardown?hoods=Leaside-Bennington,Lawrence%20Park%20South,Rosedale-Moore%20Park. Subscribers see filings the morning after they land. Two weeks free, no card, if you want to see whether it pays for itself. — Jason
 
-- `/admin` → Pipeline runs. If a run fails two days running, the City changed a file; the error text says which.
-- The AGCO file occasionally goes empty for a day. The pipeline keeps the old copy when a download is under 1 KB.
-- Fly volume: 3 GB is fine for a year. `fly volumes list` shows usage.
+## 10. Keep an eye on
+
+- https://earlyfiled.app/admin → Pipeline runs. Two failures in a row means the City changed a file; the note says which.
+- The maps use OpenStreetMap's public tiles. Fine at small scale; when there are paying customers, get a free MapTiler key and swap the tile URL in `app/web/static/app.js` (two places).
+- Azure free hours reset monthly; B1s at 24/7 is 720–744 hours, under the 750 cap. After 12 months the VM costs about $9/month, or move to Hetzner.
+- Updating the app after you change code: `git push`, then on the server `sudo /opt/signals/deploy/install.sh` (it pulls and restarts).

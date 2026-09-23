@@ -1,0 +1,6 @@
+#cloud-config
+# Paste this into the "custom data" / "user data" box when creating an Ubuntu VM.
+# Replace the two values below first.
+package_update: true
+runcmd:
+  - [ bash, -c, "curl -fsSL https://raw.githubusercontent.com/YOUR_GITHUB_USER/YOUR_REPO/main/deploy/install.sh | REPO_URL=https://github.com/YOUR_GITHUB_USER/YOUR_REPO.git DOMAIN=YOUR_DOMAIN bash > /var/log/signals-install.log 2>&1" ]

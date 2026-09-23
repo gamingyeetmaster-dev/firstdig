@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>{% block title %}Toronto Signals{% endblock %}</title>
+<title>{% block title %}EarlyFiled{% endblock %}</title>
 <meta name="description" content="{% block desc %}Toronto construction and business-opening intelligence built from public filings, refreshed daily.{% endblock %}">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@700;800&family=IBM+Plex+Sans:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Mono:wght@400;600&display=swap">
@@ -14,7 +14,7 @@
 </head>
 <body>
 <nav class="nav"><div class="wrap">
-  <a class="brand" href="/"><i></i>Toronto Signals</a>
+  <a class="brand" href="/"><i></i>EarlyFiled</a>
   <a class="item {% if request.url.path.startswith('/teardown') or request.url.path.startswith('/app/teardown') or request.url.path.startswith('/p/') %}on{% endif %}" href="/app/teardown">Teardown Feed</a>
   <a class="item {% if request.url.path.startswith('/openings') or request.url.path.startswith('/app/openings') or request.url.path.startswith('/o/') %}on{% endif %}" href="/app/openings">Opening Soon</a>
   <a class="item" href="/pricing">Pricing</a>
@@ -32,7 +32,7 @@
 </div></nav>
 {% block body %}{% endblock %}
 <footer><div class="wrap">
-  <div>Toronto Signals · Built from City of Toronto Open Data and AGCO public notices · {% if last_run %}Last refresh {{ last_run[:16].replace('T',' ') }} UTC{% endif %}</div>
+  <div>EarlyFiled · Built from City of Toronto Open Data and AGCO public notices · {% if last_run %}Last refresh {{ last_run[:16].replace('T',' ') }} UTC{% endif %}</div>
   <div><a href="/methodology">Methodology</a> · <a href="/terms">Terms &amp; privacy</a> · <a href="mailto:hello@example.com">Contact</a></div>
 </div></footer>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>

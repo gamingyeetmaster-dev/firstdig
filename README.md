@@ -1,4 +1,4 @@
-# Toronto Signals
+# EarlyFiled
 
 Two subscription data feeds built from public filings, refreshed daily:
 
