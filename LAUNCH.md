@@ -74,7 +74,11 @@ Subject: 5 Stratheden Rd just filed a $2.5M teardown
 
 Hi —, I run a small feed that reads Toronto's permit filings every morning and flags the teardowns, new houses and big additions in your area. Last week in Leaside, Lawrence Park and Moore Park that was 5 new houses, 6 demolitions and 2 garden suites, with the builder's name on each. Here's the public version: [link to /app/teardown filtered to their neighbourhoods]. Subscribers see filings the morning after they land. Two weeks free, no card, if you want to see whether it pays for itself. — Jason
 
-## 7. Watch these
+## 7. Map tiles
+
+The maps use OpenStreetMap's public tile server, which is fine for a small site but is not meant for heavy commercial use. When you have paying customers, sign up for a free MapTiler or Stadia Maps key and swap the tile URL in `app/web/static/app.js` (two places). Ten minutes.
+
+## 8. Watch these
 
 - `/admin` → Pipeline runs. If a run fails two days running, the City changed a file; the error text says which.
 - The AGCO file occasionally goes empty for a day. The pipeline keeps the old copy when a download is under 1 KB.

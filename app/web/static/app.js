@@ -9,6 +9,7 @@
     L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors', maxZoom: 19,
     }).addTo(map);
+    let bounds = null;
     fetch(url + (url.includes("?") ? "&" : "?") + "_=" + Date.now()).then(r => r.json()).then(gj => {
       const layer = L.geoJSON(gj, {
         pointToLayer: (f, latlng) => {
@@ -24,10 +25,14 @@
           l.bindPopup("<b>" + esc(title) + "</b><br>" + esc(sub) + "<br><span style='color:#777'>" + esc(p.hood || "") + "</span><br><a href='" + href + "'>Open record →</a>");
         },
       }).addTo(map);
-      if (gj.features.length) map.fitBounds(layer.getBounds().pad(0.05), { maxZoom: 15 });
+      if (gj.features.length) { bounds = layer.getBounds().pad(0.05); map.invalidateSize(); map.fitBounds(bounds, { maxZoom: 15, animate: false }); }
       const n = document.getElementById("map-count");
       if (n) n.textContent = gj.features.length + " on map";
     });
+    const fix = () => { map.invalidateSize(); if (bounds) map.fitBounds(bounds, { maxZoom: 15, animate: false }); };
+    setTimeout(fix, 100); setTimeout(fix, 600);
+    window.addEventListener("load", fix); window.addEventListener("resize", fix);
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(fix);
     return map;
   }
 
@@ -67,6 +72,7 @@
       const map = L.map(mm, { scrollWheelZoom: false, zoomControl: false }).setView([lat, lon], 16);
       L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", { attribution: '&copy; OpenStreetMap contributors' }).addTo(map);
       L.circleMarker([lat, lon], { radius: 9, color: "#fff", weight: 2, fillColor: mm.dataset.color || "#D0521A", fillOpacity: 1 }).addTo(map);
+      setTimeout(() => map.invalidateSize(), 300); window.addEventListener("load", () => map.invalidateSize());
     }
     const f = document.getElementById("filters");
     if (f) wireFilters(f);

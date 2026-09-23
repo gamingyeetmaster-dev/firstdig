@@ -184,6 +184,10 @@ def build_projects(con, log=print):
         primary = [r for r in grp if r["permit_type"] in PRIMARY_TYPES]
         if not primary:
             continue
+        # A project whose only rows are revisions belongs to a permit filed
+        # before PROJECT_SINCE; skip it rather than present a revision as new.
+        if not any((r["revision_num"] or "00").strip("0") == "" for r in primary):
+            continue
         kind, score = classify(primary)
         if not kind:
             continue
@@ -194,7 +198,8 @@ def build_projects(con, log=print):
         acts = [d for r in grp for d in (r["application_date"], r["issued_date"]) if d]
         issued = [r["issued_date"] for r in primary if r["issued_date"]]
         loc = next(((r["lat"], r["lon"], r["neighbourhood"]) for r in grp if r["lat"]), (None, None, None))
-        desc = max((r["description"] or "" for r in primary), key=len)
+        base = [r for r in primary if (r["revision_num"] or "00").strip("0") == ""] or primary
+        desc = max((r["description"] or "" for r in base), key=len)
         # recency bonus so the feed sorts sensibly
         first = min(dates) if dates else None
         age_days = (dt.date.today() - dt.date.fromisoformat(first)).days if first else 999
