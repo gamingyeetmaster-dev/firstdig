@@ -22,7 +22,7 @@ ADMIN_EMAILS = {e.strip().lower() for e in os.getenv("ADMIN_EMAILS", "").split("
 # Email (Resend). When unset, emails are printed to the log and, in DEV_MODE,
 # magic links are shown on screen.
 RESEND_API_KEY = os.getenv("RESEND_API_KEY", "")
-EMAIL_FROM = os.getenv("EMAIL_FROM", "EarlyFiled <hello@example.com>")
+EMAIL_FROM = os.getenv("EMAIL_FROM", "First Dig <hello@example.com>")
 
 # Stripe. When unset, every signed-in user gets a free trial and the
 # "Upgrade" button explains billing is not live yet.

@@ -1,9 +1,9 @@
 # Fly.io config. One small machine with a persistent volume is enough.
 #   fly launch --copy-config --no-deploy   (creates the app)
 #   fly volumes create data --size 3 --region yyz
-#   fly secrets set SECRET_KEY=... CRON_SECRET=... RESEND_API_KEY=... STRIPE_SECRET_KEY=... STRIPE_WEBHOOK_SECRET=... STRIPE_PRICE_TEARDOWN=... STRIPE_PRICE_OPENINGS=... STRIPE_PRICE_BUNDLE=... ADMIN_EMAILS=you@example.com EMAIL_FROM="EarlyFiled <hello@yourdomain>" BASE_URL=https://yourdomain
+#   fly secrets set SECRET_KEY=... CRON_SECRET=... RESEND_API_KEY=... STRIPE_SECRET_KEY=... STRIPE_WEBHOOK_SECRET=... STRIPE_PRICE_TEARDOWN=... STRIPE_PRICE_OPENINGS=... STRIPE_PRICE_BUNDLE=... ADMIN_EMAILS=you@example.com EMAIL_FROM="First Dig <hello@yourdomain>" BASE_URL=https://yourdomain
 #   fly deploy
-app = "earlyfiled"
+app = "firstdig"
 primary_region = "yyz"
 
 [build]

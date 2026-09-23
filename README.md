@@ -1,4 +1,4 @@
-# EarlyFiled
+# First Dig
 
 Two subscription data feeds built from public filings, refreshed daily:
 

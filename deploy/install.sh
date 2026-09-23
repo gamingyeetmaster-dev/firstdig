@@ -5,7 +5,7 @@
 set -euo pipefail
 
 REPO_URL="${REPO_URL:?set REPO_URL to your git repo}"
-DOMAIN="${DOMAIN:?set DOMAIN to your domain, e.g. earlyfiled.app}"
+DOMAIN="${DOMAIN:?set DOMAIN to your domain, e.g. firstdig.app}"
 APP_DIR=/opt/signals
 APP_USER=signals
 
@@ -55,7 +55,7 @@ sudo -u $APP_USER bash -c "cd $APP_DIR && [ -d .venv ] || python3 -m venv .venv;
 # systemd
 cat > /etc/systemd/system/signals.service <<EOF
 [Unit]
-Description=EarlyFiled web app
+Description=First Dig web app
 After=network-online.target
 [Service]
 User=$APP_USER
