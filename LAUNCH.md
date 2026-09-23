@@ -21,7 +21,7 @@ git push -u origin main
 ## 2. Domain: Name.com, free for a year (10 min)
 
 1. education.github.com/pack/offers → find **Name.com** → "Get access" (it links you into name.com with the promo attached).
-2. Search **earlyfiled** and pick **.app** (Google-run, HTTPS-only, clean, on the free list). If `.app` isn't shown as free, `.live` or `.dev` are the next choices.
+2. Search **firstdig** and pick **.app** (Google-run, HTTPS-only, clean, on the free list). If `.app` isn't shown as free, `.live` or `.dev` are the next choices.
 3. Check out; the code applies itself. Turn **auto-renew off** on the domain so you're not charged next year without deciding.
 4. Later, when there's revenue, buy `firstdig.com` and `firstdig.ca` (about $12 each per year) and point them at the same server. Not needed to launch.
 
@@ -39,7 +39,7 @@ DigitalOcean left the Pack on Aug 1 2026, so Azure is the free path. Azure for S
    - Size: **Standard_B1s** (shows as "free services eligible")
    - Authentication: SSH public key (let it generate one and download it)
    - Inbound ports: **HTTP (80), HTTPS (443), SSH (22)**
-   - **Advanced tab → Custom data**: paste the contents of `deploy/cloud-init.yaml` after replacing `YOUR_GITHUB_USER`, `YOUR_REPO` (earlyfiled) and `YOUR_DOMAIN` (firstdig.app).
+   - **Advanced tab → Custom data**: paste the contents of `deploy/cloud-init.yaml` after replacing `YOUR_GITHUB_USER`, `YOUR_REPO` (firstdig) and `YOUR_DOMAIN` (firstdig.app).
 3. Create. Note the **public IP** on the VM overview page. The install runs on its own for about 5 minutes (log: `/var/log/signals-install.log` on the VM).
 
 Anything else with Ubuntu + a persistent disk works the same way (Hetzner CX22 is about $4/month if you'd rather pay than use Azure).
