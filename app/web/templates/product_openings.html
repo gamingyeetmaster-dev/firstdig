@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% set product = PRODUCTS.openings %}
+{% block title %}Opening Soon{% endblock %}
+{% block desc %}Toronto restaurants, bars, clinics and shops 60 to 120 days before they open, joined from liquor applications, business licences and fit-out permits.{% endblock %}
+{% block body %}
+<div class="hero"><div class="wrap">
+  <div class="eyebrow">Opening Soon · Toronto</div>
+  <h1>{{ product.tagline }}</h1>
+  <p class="lede">A new restaurant leaves three separate paper trails before it opens: a liquor licence application at the AGCO, a business licence at the City, and a fit-out permit at Toronto Building. Nobody joins them. We do, by address, every day.</p>
+  <div class="cta">
+    <a class="btn primary" href="/login?next=/app/openings">Start a {{ TRIAL_DAYS }}-day free trial</a>
+    <a class="btn" href="/app/openings">Browse the delayed public feed</a>
+    <span class="muted small">${{ product.price_monthly }}/month after the trial. Cancel anytime.</span>
+  </div>
+  <div class="stats">
+    <div><b class="num">{{ stats.openings_30d }}</b><span>businesses with a new signal, 30 days</span></div>
+    <div><b class="num">{{ stats.openings_multi_30d }}</b><span>with two or more independent signals</span></div>
+    <div><b class="num">{{ stats.liquor_live }}</b><span>liquor applications on public notice right now</span></div>
+    {% for r in by_cat[:2] %}<div><b class="num">{{ r.n }}</b><span>{{ r.category.replace('_',' ') }} signals, 30 days</span></div>{% endfor %}
+  </div>
+</div></div>
+
+<section><div class="wrap">
+  <div class="sec-h"><h2>Strongest current signals</h2><span class="muted small">2+ signals, last 90 days, public sample delayed {{ FREE_DELAY_DAYS }} days with names and street numbers hidden</span></div>
+  <div class="tbl"><table>
+    <thead><tr><th>Latest</th><th>Business</th><th>Category</th><th>Address</th><th>Neighbourhood</th><th>Signals</th></tr></thead>
+    <tbody>{% for o in items %}<tr>
+      <td class="num">{{ o.last_signal }}</td>
+      <td><a class="addr" href="/o/{{ o.opening_id | urlencode }}"><span class="redact">{{ o.name or 'Name on file' }}</span></a></td>
+      <td><span class="pill op">{{ o.category_label }}</span></td>
+      <td>{{ o.address }}</td>
+      <td>{{ o.neighbourhood or o.city }}</td>
+      <td><b class="num">{{ o.signal_count }}</b> <span class="muted small">{{ o.signal_types | join(' + ') }}</span></td>
+    </tr>{% endfor %}</tbody>
+  </table></div>
+  <p style="margin-top:12px"><a class="btn" href="/app/openings">Open the full dashboard with map and filters</a></p>
+</div></section>
+
+<section class="alt"><div class="wrap">
+  <div class="sec-h"><h2>Three filings, one address</h2></div>
+  <div class="how">
+    <div><b>AGCO liquor application</b><p>Every new liquor sales licence goes on public notice for 21 days with the premises name and address. This is the earliest, cleanest signal for restaurants and bars.</p></div>
+    <div><b>City business licence</b><p>Eating and drinking establishments, take-out, personal services, holistic centres, entertainment venues. Issued with the operating name, the licensee and sometimes a phone number.</p></div>
+    <div><b>Fit-out building permit</b><p>Interior alterations for "new restaurant (60 seats)", "dental office fit-out", "tenant fit-up Group E". Comes with the declared construction budget.</p></div>
+    <div><b>Score</b><p>Liquor 40, licence 30, permit 25, plus 20 for each additional independent signal, plus recency and budget. Sort by score and start at the top.</p></div>
+  </div>
+</div></section>
+
+<section><div class="wrap prose">
+  <h2>Who buys from a business before it opens</h2>
+  <ul>
+    <li><b>POS, payments and merchant services</b> — the terminal is chosen in the fit-out month.</li>
+    <li><b>Commercial insurance brokers</b> — the liquor licence needs proof of insurance to issue.</li>
+    <li><b>Food, beverage and coffee distributors</b> — accounts are won before the first order, not after.</li>
+    <li><b>Signage, printing, menus, uniforms, linen, hood cleaning, pest control, waste</b> — every one is a first-90-days purchase.</li>
+    <li><b>Local media and delivery platforms</b> — onboarding a restaurant a month before opening is worth a year of ads.</li>
+  </ul>
+  <p class="muted small">We only surface what the businesses themselves filed publicly. We do not scrape social media or private data. Contact details appear only when the applicant put them on a public licence.</p>
+</div></section>
+{% endblock %}

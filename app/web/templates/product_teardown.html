@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% set product = PRODUCTS.teardown %}
+{% block title %}Teardown Feed{% endblock %}
+{% block desc %}Every teardown, new house, multiplex, garden suite and major addition filed with Toronto Building, mapped and emailed daily.{% endblock %}
+{% block body %}
+<div class="hero"><div class="wrap">
+  <div class="eyebrow">Teardown Feed · Toronto</div>
+  <h1>{{ product.tagline }}</h1>
+  <p class="lede">Toronto Building publishes every permit application. We roll the plumbing, HVAC, drain and demolition rows up into one project per address, classify it, geocode it, attach the builder, and put it on your map the next morning.</p>
+  <div class="cta">
+    <a class="btn primary" href="/login?next=/app/teardown">Start a {{ TRIAL_DAYS }}-day free trial</a>
+    <a class="btn" href="/app/teardown">Browse the delayed public feed</a>
+    <span class="muted small">${{ product.price_monthly }}/month after the trial. Cancel anytime.</span>
+  </div>
+  <div class="stats">
+    <div><b class="num">{{ stats.projects_30d }}</b><span>projects filed, last 30 days</span></div>
+    <div><b class="num">{{ by_kind.get('teardown', 0) + by_kind.get('new_house', 0) }}</b><span>teardowns and new houses</span></div>
+    <div><b class="num">{{ by_kind.get('multiplex', 0) }}</b><span>multiplexes</span></div>
+    <div><b class="num">{{ by_kind.get('garden_suite', 0) }}</b><span>garden and laneway suites</span></div>
+    <div><b class="num">{{ by_kind.get('major_addition', 0) }}</b><span>additions over $150k</span></div>
+  </div>
+</div></div>
+
+<section><div class="wrap">
+  <div class="sec-h"><h2>What lands in the feed</h2><span class="muted small">Last 60 days, public sample delayed {{ FREE_DELAY_DAYS }} days, builder names hidden</span></div>
+  <div class="tbl"><table>
+    <thead><tr><th>Filed</th><th>Address</th><th>Neighbourhood</th><th>Project</th><th>Stage</th><th>Builder</th></tr></thead>
+    <tbody>{% for p in items %}<tr>
+      <td class="num">{{ p.first_filed }}</td>
+      <td><a class="addr" href="/p/{{ p.project_id | urlencode }}">{{ p.address }}</a></td>
+      <td>{{ p.neighbourhood }}</td>
+      <td><span class="pill td">{{ p.kind_label }}</span> {{ p.headline.split(' · ')[1:] | join(' · ') }}</td>
+      <td>{{ p.stage_label }}</td>
+      <td>{% if p.builder_name %}<span class="redact">{{ p.builder_name }}</span>{% else %}<span class="muted">—</span>{% endif %}</td>
+    </tr>{% endfor %}</tbody>
+  </table></div>
+  <p style="margin-top:12px"><a class="btn" href="/app/teardown">Open the full dashboard with map and filters</a></p>
+</div></section>
+
+<section class="alt"><div class="wrap">
+  <div class="sec-h"><h2>Who uses it, and how</h2></div>
+  <div class="how">
+    <div><b>Pool and landscape</b><p>A teardown filed today has a bare yard in ten months. Send a letter to the owner and the builder while the drawings are still open.</p></div>
+    <div><b>Fence, railing, deck</b><p>Filter to "Teardown", "New house" and "Major addition" in your service area. The permit lists the declared value so you can size the job.</p></div>
+    <div><b>Windows, doors, millwork, closets</b><p>Builders spec these 3 to 6 months after issuance. The feed shows stage: Applied, Issued, Under construction.</p></div>
+    <div><b>Realtors and lenders</b><p>Multiplex and garden-suite filings are future listings and refinances. See them by neighbourhood before the sign goes up.</p></div>
+    <div><b>Trades looking for GCs</b><p>The builder name is on the permit. Fifty builders file most of the teardowns in the city. Now you know which ones are busy this month.</p></div>
+    <div><b>Movers and storage</b><p>A major addition or underpinning means a family moving out for six months. That is a moving job and a storage unit.</p></div>
+  </div>
+</div></section>
+
+<section><div class="wrap prose">
+  <h2>Project types we classify</h2>
+  <ul>
+    {% for k, label in kinds %}<li><b>{{ label }}</b>{% if k == 'teardown' %} — a demolition folder plus a new-house permit at one address, or a new-house permit whose description says demolish.{% elif k == 'new_house' %} — a New Houses permit with no demolition on file (often an empty or severed lot).{% elif k == 'multiplex' %} — two or more dwelling units created, or duplex / triplex / fourplex in the description.{% elif k == 'garden_suite' %} — laneway or garden suite permits.{% elif k == 'major_addition' %} — additions and multi-project renovations with declared cost of $150k or more.{% elif k == 'pool' %} — any permit whose description mentions a pool.{% elif k == 'underpinning' %} — basement lowering and underpinning.{% elif k == 'second_suite' %} — new basement apartments and second units.{% elif k == 'new_building' %} — non-house new buildings over $1M (mid-rise, mixed use).{% endif %}</li>{% endfor %}
+  </ul>
+  <p class="muted small">Estimated construction cost is the applicant's declared value on the permit. It is often understated; treat it as a floor.</p>
+</div></section>
+{% endblock %}

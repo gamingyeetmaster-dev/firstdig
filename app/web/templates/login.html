@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Sign in · Toronto Signals{% endblock %}
+{% block body %}
+<section><div class="narrow">
+  <h1 style="font-size:34px">Sign in or start your trial</h1>
+  <p class="muted">No password. We email you a link that signs you in. New accounts get {{ TRIAL_DAYS }} days of full access to both feeds, no card needed.</p>
+  {% if error %}<div class="notice err">{{ error }}</div>{% endif %}
+  {% if sent %}
+    <div class="notice ok"><b>Check {{ sent }}.</b> The link works for 30 minutes.</div>
+    {% if dev_link %}<div class="notice"><b>Developer mode:</b> email sending is not configured, so here is your link: <a href="{{ dev_link }}">{{ dev_link }}</a></div>{% endif %}
+  {% else %}
+    <form class="stack" method="post" action="/login">
+      <input type="hidden" name="next" value="{{ next }}">
+      <input type="email" name="email" placeholder="you@company.com" required autofocus>
+      <button class="btn primary">Email me a sign-in link</button>
+    </form>
+  {% endif %}
+  <p class="small muted" style="margin-top:20px">By signing in you agree to the <a href="/terms">terms</a>. We send at most one digest per product per day and you can turn each off in your account.</p>
+</div></section>
+{% endblock %}

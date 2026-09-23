@@ -1,0 +1,6 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    { "name": "torontosignals", "runtimeExecutable": "python3", "runtimeArgs": ["-m", "uvicorn", "app.web.main:app", "--port", "8000"], "port": 8000 }
+  ]
+}

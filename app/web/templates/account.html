@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Account · Toronto Signals{% endblock %}
+{% block body %}
+<section><div class="narrow">
+  <h1 style="font-size:34px">Your account</h1>
+  {% if checkout == 'success' %}<div class="notice ok">Thanks, your subscription is active. It can take a few seconds for Stripe to confirm; refresh if you still see the trial badge.</div>{% endif %}
+  {% if request.query_params.get('saved') %}<div class="notice ok">Saved.</div>{% endif %}
+  <dl class="kv" style="margin:18px 0 26px">
+    <dt>Email</dt><dd>{{ user.email }}</dd>
+    <dt>Access</dt><dd>{% if access.reason.startswith('plan:') %}{{ access.reason[5:] | capitalize }} plan · {{ user.plan_status }}{% elif access.trial %}Free trial, {{ access.trial_days_left }} day{{ '' if access.trial_days_left == 1 else 's' }} left{% elif access.reason == 'admin' %}Admin{% else %}Trial ended. <a href="/pricing">Choose a plan</a> to keep full access.{% endif %}</dd>
+    <dt>Billing</dt><dd>{% if user.stripe_customer_id and billing_enabled() %}<a href="/billing/portal">Manage subscription, invoices and card ↗</a>{% else %}<a href="/pricing">See plans</a>{% endif %}</dd>
+  </dl>
+  <h2>Email digests</h2>
+  <p class="muted">Each digest goes out once a day, only when there is something new. Pick neighbourhoods to receive only your patch; leave all unchecked for the whole city.</p>
+  <form method="post" action="/account" class="stack" style="max-width:none">
+    <label><input type="checkbox" name="digest_teardown" {% if user.digest_teardown %}checked{% endif %}> Teardown Feed daily digest</label>
+    <label><input type="checkbox" name="digest_openings" {% if user.digest_openings %}checked{% endif %}> Opening Soon daily digest</label>
+    <div class="rail" style="border:1px solid var(--rule);border-radius:3px;padding:12px">
+      <h4>Neighbourhoods ({{ areas | length }} selected)</h4>
+      <input type="text" id="hood-search" placeholder="Type to find…" autocomplete="off" style="margin-bottom:6px">
+      <div class="hoods">{% for h in hoods %}<label><input type="checkbox" name="areas" value="{{ h }}" {% if h in areas %}checked{% endif %}> {{ h }}</label>{% endfor %}</div>
+    </div>
+    <div><button class="btn primary">Save preferences</button></div>
+  </form>
+</div></section>
+{% endblock %}
+{% block scripts %}<script>
+document.getElementById('hood-search').addEventListener('input',function(){var v=this.value.toLowerCase();document.querySelectorAll('.hoods label').forEach(function(l){l.hidden=v&&!l.textContent.toLowerCase().includes(v)})});
+</script>{% endblock %}

@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}How it works · Toronto Signals{% endblock %}
+{% block body %}
+<section><div class="wrap prose">
+  <h1 style="font-size:40px">How it works</h1>
+  <p class="muted">Every number on this site traces back to a public file you can download yourself. We add joining, classification, geocoding and timing.</p>
+
+  <h2>Sources</h2>
+  <ul>
+    <li><b>Building Permits, Active Permits</b> — City of Toronto Open Data. Every permit application with type, description, declared cost, status, applicant-stated builder and address. Refreshed daily by the City.</li>
+    <li><b>Business Licences and Permits</b> — City of Toronto Open Data. Every licence issued by Municipal Licensing &amp; Standards with category, operating name, licensee, address and phone where provided. Refreshed daily.</li>
+    <li><b>Status of Current Liquor Sales Licence Applications</b> — Alcohol and Gaming Commission of Ontario open data. Every application on public notice, province-wide, with premises name, address and objection deadline.</li>
+    <li><b>Address Points and Neighbourhoods</b> — City of Toronto Open Data, used to place each record on the map and assign one of the 158 official neighbourhoods.</li>
+  </ul>
+
+  <h2>Teardown Feed</h2>
+  <p>One address usually generates five to ten permit rows: the building permit, a demolition folder, plumbing, HVAC, drains, and later revisions. We group all rows at an address into one project, then classify the project by permit type, the "work" field, dwelling units created and keywords in the description. Stage is derived from permit status. The builder is the applicant-stated builder on the permit; it is blank when the owner applied directly.</p>
+  <p>We roll up projects first filed on or after January 1, 2024. Geocoding uses the City's own address point for the permit; {{ '%.1f' | format(99.5) }}% of projects place on the map.</p>
+
+  <h2>Opening Soon</h2>
+  <p>We normalise addresses on all three sources (unit numbers included, so a mall food court does not collapse into one record) and join by address. Each filing becomes a signal with a date and a plain-English detail line. The score is 40 for a liquor application, 30 for a business licence, 25 for a fit-out permit, plus 20 for each additional independent filing type, plus a recency bonus and a fit-out budget bonus.</p>
+  <p>Category comes from the licence category where there is one, otherwise from keywords in the permit description or the premises name. It is a best guess and is labelled as such.</p>
+
+  <h2>What we don't do</h2>
+  <ul>
+    <li>We do not scrape social media, MLS, or private databases.</li>
+    <li>We do not append phone numbers, emails or owner names from data brokers. Contact details appear only where the applicant filed them publicly.</li>
+    <li>We do not guarantee that a permit becomes a project or that a licence becomes an opening. Roughly one in ten applications is refused, withdrawn or stalls.</li>
+  </ul>
+
+  <h2>Current coverage</h2>
+  <ul>
+    <li>{{ stats.projects_30d }} residential projects filed in the last 30 days, {{ stats.teardowns_30d }} of them teardowns, new houses or multiplexes.</li>
+    <li>{{ stats.openings_30d }} businesses with a fresh signal in the last 30 days, {{ stats.openings_multi_30d }} with two or more.</li>
+    <li>{{ stats.liquor_live }} liquor applications on public notice today.</li>
+    <li>Last refresh: {{ stats.last_run }} UTC.</li>
+  </ul>
+</div></section>
+{% endblock %}

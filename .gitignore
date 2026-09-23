@@ -1,0 +1,6 @@
+.env
+data/raw/
+data/*.db*
+data/geo-index.pkl
+__pycache__/
+*.pyc

@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Pricing · Toronto Signals{% endblock %}
+{% block body %}
+<section><div class="wrap">
+  <h1 style="font-size:40px">Simple monthly plans</h1>
+  <p class="muted" style="max-width:60ch">Every plan starts with a {{ TRIAL_DAYS }}-day free trial of both feeds. Prices are in Canadian dollars, plus HST. Cancel from your account in one click.</p>
+  {% if request.query_params.get('billing') == 'off' %}<div class="notice">Card billing isn't switched on yet. Your trial keeps working; email us and we'll set you up manually.</div>{% endif %}
+  {% if request.query_params.get('error') %}<div class="notice err">Checkout failed ({{ request.query_params.get('error') }}). Try again or email us.</div>{% endif %}
+  <div class="plans">
+    <div class="plan" data-product="teardown">
+      <span class="pill td">Teardown Feed</span>
+      <div class="price">${{ PRODUCTS.teardown.price_monthly }}<small>/month</small></div>
+      <ul><li>Every residential project the morning after filing</li><li>Builder names and permit numbers</li><li>Map, 158 neighbourhood filters, stage and cost filters</li><li>Daily email digest for your neighbourhoods</li><li>Unlimited CSV export</li></ul>
+      {% if user %}<form method="post" action="/billing/checkout/teardown"><button class="btn primary" style="width:100%">Subscribe</button></form>{% else %}<a class="btn primary" href="/login?next=/pricing">Start free trial</a>{% endif %}
+    </div>
+    <div class="plan best">
+      <span class="pill">Both feeds</span>
+      <div class="price">${{ BUNDLE_PRICE }}<small>/month</small></div>
+      <ul><li>Everything in both plans</li><li>Save ${{ PRODUCTS.teardown.price_monthly + PRODUCTS.openings.price_monthly - BUNDLE_PRICE }} a month</li><li>Best for brokers, signage, cleaning and anyone who sells to both homeowners and businesses</li></ul>
+      {% if user %}<form method="post" action="/billing/checkout/bundle"><button class="btn primary" style="width:100%">Subscribe</button></form>{% else %}<a class="btn primary" href="/login?next=/pricing">Start free trial</a>{% endif %}
+    </div>
+    <div class="plan" data-product="openings">
+      <span class="pill op">Opening Soon</span>
+      <div class="price">${{ PRODUCTS.openings.price_monthly }}<small>/month</small></div>
+      <ul><li>Liquor, licence and fit-out permit signals joined by address</li><li>Names, street numbers, phone where filed, applicant</li><li>Category, neighbourhood and signal-count filters</li><li>Daily email digest</li><li>Unlimited CSV export</li></ul>
+      {% if user %}<form method="post" action="/billing/checkout/openings"><button class="btn primary" style="width:100%">Subscribe</button></form>{% else %}<a class="btn primary" href="/login?next=/pricing">Start free trial</a>{% endif %}
+    </div>
+  </div>
+  <div class="prose" style="margin-top:36px">
+    <h3>Questions people ask</h3>
+    <p><b>Is this legal?</b> Yes. Everything comes from City of Toronto Open Data (Open Government Licence) and the AGCO's public notice file. We publish the applicant's name, business name and phone only where the applicant put it on a public licence. We do not append personal data from other sources.</p>
+    <p><b>How fresh is it?</b> The City refreshes its permit and licence files daily; we pull them every morning. A permit filed on Monday is in Tuesday's digest.</p>
+    <p><b>Do you sell leads more than once?</b> This isn't a lead marketplace. It's the public record, organised. Every subscriber sees the same filings; what you do with them first is up to you.</p>
+    <p><b>Team seats?</b> Email us. Multi-seat and API access are priced per case.</p>
+  </div>
+</div></section>
+{% endblock %}

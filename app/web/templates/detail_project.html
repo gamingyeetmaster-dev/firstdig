@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}{{ p.address }} · Teardown Feed{% endblock %}
+{% block body %}
+<div class="detail">
+  <p class="small"><a href="/app/teardown">← Teardown Feed</a></p>
+  <div class="head">
+    <div>
+      <span class="pill td">{{ p.kind_label }}</span> <span class="pill">{{ p.stage_label }}</span>
+      <h1 style="font-size:34px;margin-top:10px">{{ p.address }}</h1>
+      <p class="muted">{{ p.neighbourhood }}{% if p.postal %} · {{ p.postal }}{% endif %} · Ward {{ p.ward }}</p>
+    </div>
+    <div style="text-align:right"><div class="num" style="font:800 34px var(--disp)">{{ p.est_cost | money }}</div><div class="muted small">declared construction value</div></div>
+  </div>
+  {% if not full %}<div class="paywall"><div><b>Subscribers see</b> the builder, every permit number and the full permit timeline for this address.</div><span class="sp"></span><a class="btn primary sm" href="{% if user %}/pricing{% else %}/login?next=/p/{{ p.project_id | urlencode }}{% endif %}">Unlock</a></div>{% endif %}
+  <div class="two">
+    <div>
+      <dl class="kv">
+        <dt>Summary</dt><dd>{{ p.headline }}</dd>
+        <dt>Description</dt><dd>{{ p.description }}</dd>
+        <dt>Builder</dt><dd>{% if p.builder_name %}{% if p.redacted %}<span class="redact">{{ p.builder_name }}</span>{% else %}{{ p.builder_name }}{% endif %}{% else %}<span class="muted">Not stated on permit</span>{% endif %}</dd>
+        <dt>Units created</dt><dd>{{ p.units_created or '—' }}</dd>
+        <dt>First filed</dt><dd class="num">{{ p.first_filed }}</dd>
+        <dt>Permit issued</dt><dd class="num">{{ p.issued_date or '—' }}</dd>
+        <dt>Last activity</dt><dd class="num">{{ p.last_activity }}</dd>
+        <dt>Permits</dt><dd>{% if p.permit_nums %}<span class="mono small">{{ p.permit_nums.replace(',', ', ') }}</span>{% else %}<span class="redact">Subscribers only</span>{% endif %}</dd>
+        <dt>Filings involved</dt><dd class="small">{{ p.signals.replace(',', ', ') }}</dd>
+      </dl>
+      {% if permits %}
+      <h3 style="margin:22px 0 10px">Permit timeline</h3>
+      <ul class="timeline">{% for x in permits %}<li><span class="d">{{ x.application_date }}</span> · {{ x.permit_type }}{% if x.work %} · {{ x.work }}{% endif %}<br><span class="small">{{ x.description[:220] }}</span><br><span class="small muted">{{ x.status }}{% if x.issued_date %} · issued {{ x.issued_date }}{% endif %} · {{ x.permit_num }} rev {{ x.revision_num }}</span></li>{% endfor %}</ul>
+      {% endif %}
+    </div>
+    <div>
+      {% if p.lat %}<div id="minimap" data-lat="{{ p.lat }}" data-lon="{{ p.lon }}" data-color="#D0521A"></div>
+      <p class="small" style="margin-top:8px"><a href="https://www.google.com/maps/search/?api=1&query={{ (p.address ~ ', Toronto, ON') | urlencode }}" target="_blank" rel="noopener">Open in Google Maps ↗</a> · <a href="https://www.google.com/maps/@?api=1&map_action=pano&viewpoint={{ p.lat }},{{ p.lon }}" target="_blank" rel="noopener">Street View ↗</a></p>{% endif %}
+      <h3 style="margin:18px 0 8px">Nearby in {{ p.neighbourhood }}</h3>
+      <div class="tbl"><table><tbody>{% for n in nearby %}<tr><td class="num">{{ n.first_filed }}</td><td><a href="/p/{{ n.project_id | urlencode }}">{{ n.address }}</a><span class="sub">{{ n.headline }}</span></td></tr>{% endfor %}</tbody></table></div>
+    </div>
+  </div>
+</div>
+{% endblock %}

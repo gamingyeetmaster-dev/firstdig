@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}Toronto Signals{% endblock %}
+{% block body %}
+<div class="hero"><div class="wrap">
+  <div class="eyebrow">Two daily feeds from Toronto's public filings</div>
+  <h1>Know about the job before the hoarding goes up.</h1>
+  <p class="lede">Every teardown, new house, multiplex and major addition filed with Toronto Building, and every restaurant, bar, clinic and shop that just applied for a liquor licence, a business licence or a fit-out permit. Joined by address, mapped, and in your inbox each morning.</p>
+  <div class="cta">
+    <a class="btn primary" href="/login">Start a {{ TRIAL_DAYS }}-day free trial</a>
+    <a class="btn" href="/teardown">See the Teardown Feed</a>
+    <a class="btn" href="/openings">See Opening Soon</a>
+    <span class="muted small">No card needed for the trial.</span>
+  </div>
+  <div class="stats">
+    <div><b class="num">{{ stats.projects_7d }}</b><span>residential projects filed in the last 7 days</span></div>
+    <div><b class="num">{{ stats.teardowns_30d }}</b><span>teardowns, new houses and multiplexes in 30 days</span></div>
+    <div><b class="num">{{ (stats.cost_30d / 1e6) | round(0) | int }}M</b><span>declared construction value, 30 days</span></div>
+    <div><b class="num">{{ stats.openings_multi_30d }}</b><span>businesses with 2+ opening signals, 30 days</span></div>
+  </div>
+</div></div>
+
+<section><div class="wrap two">
+  <div class="card td" data-product="teardown">
+    <span class="pill td">Teardown Feed</span>
+    <h2 style="margin:10px 0 8px">{{ PRODUCTS.teardown.tagline }}</h2>
+    <p class="muted">For pool builders, landscapers, fence and railing companies, window and door dealers, custom millwork, home automation, movers and anyone who needs to be the first call when a $2M rebuild is filed.</p>
+    <div class="tbl"><table>
+      <thead><tr><th>Filed</th><th>Address</th><th>Project</th></tr></thead>
+      <tbody>{% for p in sample_t %}<tr>
+        <td class="num">{{ p.first_filed | nice_date }}</td>
+        <td><span class="addr">{{ p.address }}</span><span class="sub">{{ p.neighbourhood }}</span></td>
+        <td>{{ p.headline }}</td>
+      </tr>{% endfor %}</tbody>
+    </table></div>
+    <p class="small muted" style="margin-top:8px">Public sample is delayed {{ FREE_DELAY_DAYS }} days. Subscribers see filings the morning after they land, with the builder's name.</p>
+    <a class="btn primary" href="/teardown">Explore the Teardown Feed</a>
+  </div>
+  <div class="card op" data-product="openings">
+    <span class="pill op">Opening Soon</span>
+    <h2 style="margin:10px 0 8px">{{ PRODUCTS.openings.tagline }}</h2>
+    <p class="muted">For POS and payments reps, insurance brokers, food and beverage distributors, commercial cleaners, signage shops, linen services and anyone who sells to a new business in its first 90 days.</p>
+    <div class="tbl"><table>
+      <thead><tr><th>Latest</th><th>Business</th><th>Signals</th></tr></thead>
+      <tbody>{% for o in sample_o %}<tr>
+        <td class="num">{{ o.last_signal | nice_date }}</td>
+        <td><span class="addr">{{ o.category_label }}</span><span class="sub">{{ o.address }} · {{ o.neighbourhood }}</span></td>
+        <td><span class="pill op">{{ o.signal_count }}</span> {{ o.signal_types | join(' + ') }}</td>
+      </tr>{% endfor %}</tbody>
+    </table></div>
+    <p class="small muted" style="margin-top:8px">Public sample hides names and street numbers. Subscribers get the name, address, phone where filed, and the applicant.</p>
+    <a class="btn primary" href="/openings">Explore Opening Soon</a>
+  </div>
+</div></section>
+
+<section class="alt"><div class="wrap">
+  <div class="sec-h"><h2>Why this beats lead-gen sites</h2></div>
+  <div class="how">
+    <div><b>It's the primary record</b><p>We read the same permit and licence files the city publishes, every day. No form-fills, no shared leads, no "exclusive" leads sold four times.</p></div>
+    <div><b>Timing you can't buy elsewhere</b><p>A permit application lands 60 to 120 days before construction and 90 to 180 days before the owner needs a pool, a fence or a sign. That is the window.</p></div>
+    <div><b>Joined, not dumped</b><p>Opening Soon stacks three independent filings by address. Two or more signals at one address is a business that is definitely opening, not a rumour.</p></div>
+    <div><b>Filter to your patch</b><p>158 city neighbourhoods, project type, stage, declared cost, category. Save a filter, get only your patch by email, export to CSV for your CRM.</p></div>
+  </div>
+</div></section>
+{% endblock %}

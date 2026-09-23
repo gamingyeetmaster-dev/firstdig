@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Admin · Toronto Signals{% endblock %}
+{% block body %}
+<section><div class="wrap">
+  <h1 style="font-size:34px">Admin</h1>
+  <div class="stats">{% for k, v in counts.items() %}<div><b class="num">{{ v }}</b><span>{{ k }}</span></div>{% endfor %}</div>
+  <h2 style="margin:28px 0 10px">Users</h2>
+  <div class="tbl"><table><thead><tr><th>Email</th><th>Created</th><th>Last login</th><th>Trial ends</th><th>Plan</th><th>Digests</th><th>Areas</th></tr></thead>
+  <tbody>{% for u in users %}<tr><td>{{ u.email }}</td><td class="num">{{ u.created[:10] }}</td><td class="num">{{ (u.last_login or '')[:10] }}</td><td class="num">{{ u.trial_ends }}</td><td>{{ u.plan or '—' }} {{ u.plan_status or '' }}</td><td>{{ 'T' if u.digest_teardown else '' }}{{ 'O' if u.digest_openings else '' }}</td><td class="small">{{ u.areas or 'all' }}</td></tr>{% endfor %}</tbody></table></div>
+  <h2 style="margin:28px 0 10px">Pipeline runs</h2>
+  <div class="tbl"><table><thead><tr><th>Started</th><th>Finished</th><th>OK</th><th>Notes</th></tr></thead>
+  <tbody>{% for r in runs %}<tr><td class="num">{{ r.started }}</td><td class="num">{{ r.finished }}</td><td>{{ 'yes' if r.ok else 'NO' }}</td><td class="small">{{ r.notes }}</td></tr>{% endfor %}</tbody></table></div>
+  <p class="small muted" style="margin-top:18px">Trigger a refresh: <code>GET /tasks/refresh?key=…</code> · Send digests: <code>GET /tasks/digests?key=…</code> (add <code>&amp;dry=1</code> to preview).</p>
+</div></section>
+{% endblock %}

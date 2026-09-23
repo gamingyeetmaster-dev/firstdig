@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en" {% if product %}data-product="{{ product.slug }}"{% endif %}>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}Toronto Signals{% endblock %}</title>
+<meta name="description" content="{% block desc %}Toronto construction and business-opening intelligence built from public filings, refreshed daily.{% endblock %}">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@700;800&family=IBM+Plex+Sans:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<link rel="stylesheet" href="/static/app.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='2' y='8' width='12' height='16' fill='%23D0521A'/%3E%3Crect x='18' y='8' width='12' height='16' fill='%23137F68'/%3E%3C/svg%3E">
+{% block head %}{% endblock %}
+</head>
+<body>
+<nav class="nav"><div class="wrap">
+  <a class="brand" href="/"><i></i>Toronto Signals</a>
+  <a class="item {% if request.url.path.startswith('/teardown') or request.url.path.startswith('/app/teardown') or request.url.path.startswith('/p/') %}on{% endif %}" href="/app/teardown">Teardown Feed</a>
+  <a class="item {% if request.url.path.startswith('/openings') or request.url.path.startswith('/app/openings') or request.url.path.startswith('/o/') %}on{% endif %}" href="/app/openings">Opening Soon</a>
+  <a class="item" href="/pricing">Pricing</a>
+  <a class="item" href="/methodology">How it works</a>
+  <span class="sp"></span>
+  {% if user %}
+    {% if access.trial %}<span class="pill warn">Trial · {{ access.trial_days_left }}d left</span>{% endif %}
+    <a class="item" href="/account">{{ user.email }}</a>
+    {% if is_admin %}<a class="item" href="/admin">Admin</a>{% endif %}
+    <form method="post" action="/logout" style="margin:0"><button class="btn sm ghost">Sign out</button></form>
+  {% else %}
+    <a class="btn sm" href="/login">Sign in</a>
+    <a class="btn sm primary" href="/login">Start free trial</a>
+  {% endif %}
+</div></nav>
+{% block body %}{% endblock %}
+<footer><div class="wrap">
+  <div>Toronto Signals · Built from City of Toronto Open Data and AGCO public notices · {% if last_run %}Last refresh {{ last_run[:16].replace('T',' ') }} UTC{% endif %}</div>
+  <div><a href="/methodology">Methodology</a> · <a href="/terms">Terms &amp; privacy</a> · <a href="mailto:hello@example.com">Contact</a></div>
+</div></footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="/static/app.js"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

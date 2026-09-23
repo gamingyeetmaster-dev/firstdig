@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Teardown Feed dashboard{% endblock %}
+{% block body %}
+<div class="dash">
+  <form class="rail" id="filters">
+    <h4>Time window</h4>
+    <select name="days">{% for d in [7,14,30,60,90,180,365] %}<option value="{{ d }}" {% if active.days == d %}selected{% endif %}>Activity in last {{ d }} days</option>{% endfor %}</select>
+    <h4>Project type</h4>
+    <div data-group="kinds">{% for k, label in kinds %}<label><input type="checkbox" value="{{ k }}" {% if k in (active.kinds or []) %}checked{% endif %}> {{ label }}</label>{% endfor %}</div>
+    <h4>Stage</h4>
+    <div data-group="stages">{% for k, label in stages %}<label><input type="checkbox" value="{{ k }}" {% if k in (active.stages or []) %}checked{% endif %}> {{ label }}</label>{% endfor %}</div>
+    <h4>Minimum declared cost</h4>
+    <select name="mincost"><option value="">Any</option>{% for v, l in [(100000,'$100k'),(250000,'$250k'),(500000,'$500k'),(1000000,'$1M'),(2000000,'$2M')] %}<option value="{{ v }}" {% if active.mincost == v %}selected{% endif %}>{{ l }}+</option>{% endfor %}</select>
+    <h4>Neighbourhoods</h4>
+    <input type="text" id="hood-search" placeholder="Type to find…" autocomplete="off" style="margin-bottom:6px">
+    <div class="hoods" data-group="hoods">{% for h in hoods %}<label><input type="checkbox" value="{{ h }}" {% if h in (active.hoods or []) %}checked{% endif %}> {{ h }}</label>{% endfor %}</div>
+    <h4>Search</h4>
+    <input type="text" name="q" value="{{ active.q or '' }}" placeholder="Street, builder, keyword">
+    <div class="actions"><button class="btn primary sm">Apply</button><button type="button" class="btn sm ghost" data-reset>Reset</button></div>
+  </form>
+  <div class="main">
+    {% if not full %}
+    <div class="paywall">
+      <div><b>Public view.</b> Records delayed {{ FREE_DELAY_DAYS }} days, builder names and permit numbers hidden.</div><span class="sp"></span>
+      {% if user %}<a class="btn primary sm" href="/pricing">Subscribe to see today's filings</a>{% else %}<a class="btn primary sm" href="/login?next=/app/teardown">Start free trial</a>{% endif %}
+    </div>
+    {% endif %}
+    <div class="top">
+      <h2>{{ total }} project{{ '' if total == 1 else 's' }}</h2>
+      <span class="muted small" id="map-count"></span>
+      <span class="sp"></span>
+      <button class="btn sm ghost" id="map-toggle" type="button">Toggle map</button>
+      {% if full %}<a class="btn sm" href="/export/teardown.csv{{ ('?' + request.url.query) if request.url.query else '' }}">Export CSV</a>{% endif %}
+    </div>
+    <div id="map" data-url="/api/teardown.geojson" data-kind="teardown"></div>
+    <div class="tbl"><table>
+      <thead><tr><th>Filed</th><th>Address</th><th>Project</th><th>Stage</th><th class="r">Declared</th><th>Builder</th><th>Last activity</th></tr></thead>
+      <tbody>{% for p in items %}<tr>
+        <td class="num">{{ p.first_filed }}</td>
+        <td><a class="addr" href="/p/{{ p.project_id | urlencode }}">{{ p.address }}</a><span class="sub">{{ p.neighbourhood }}{% if p.postal %} · {{ p.postal }}{% endif %}</span></td>
+        <td><span class="pill td">{{ p.kind_label }}</span><span class="sub">{{ p.description[:110] }}{% if p.description | length > 110 %}…{% endif %}</span></td>
+        <td>{{ p.stage_label }}</td>
+        <td class="r num">{{ p.est_cost | money }}</td>
+        <td>{% if p.builder_name %}{% if p.redacted %}<span class="redact">{{ p.builder_name }}</span>{% else %}{{ p.builder_name }}{% endif %}{% else %}<span class="muted">—</span>{% endif %}</td>
+        <td class="num">{{ p.last_activity }}</td>
+      </tr>{% else %}<tr><td colspan="7" class="muted">Nothing matches. Widen the time window or clear a filter.</td></tr>{% endfor %}</tbody>
+    </table></div>
+    {% if total > items | length %}<p class="muted small" style="margin-top:8px">Showing the first {{ items | length }}. Narrow the filters or export CSV for everything.</p>{% endif %}
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Opening Soon dashboard{% endblock %}
+{% block body %}
+<div class="dash">
+  <form class="rail" id="filters">
+    <h4>Time window</h4>
+    <select name="days">{% for d in [7,14,30,45,60,90,150] %}<option value="{{ d }}" {% if active.days == d %}selected{% endif %}>Signal in last {{ d }} days</option>{% endfor %}</select>
+    <h4>Minimum signals</h4>
+    <select name="minsig">{% for d in [1,2,3] %}<option value="{{ d }}" {% if active.minsig == d %}selected{% endif %}>{{ d }}+ independent filing{{ '' if d == 1 else 's' }}</option>{% endfor %}</select>
+    <h4>Area</h4>
+    <select name="city"><option value="toronto" {% if active.city == 'toronto' %}selected{% endif %}>Toronto only</option><option value="all" {% if active.city == 'all' %}selected{% endif %}>All Ontario (liquor applications)</option></select>
+    <h4>Category</h4>
+    <div data-group="cats">{% for k, label in categories %}<label><input type="checkbox" value="{{ k }}" {% if k in (active.cats or []) %}checked{% endif %}> {{ label }}</label>{% endfor %}</div>
+    <h4>Neighbourhoods</h4>
+    <input type="text" id="hood-search" placeholder="Type to find…" autocomplete="off" style="margin-bottom:6px">
+    <div class="hoods" data-group="hoods">{% for h in hoods %}<label><input type="checkbox" value="{{ h }}" {% if h in (active.hoods or []) %}checked{% endif %}> {{ h }}</label>{% endfor %}</div>
+    <h4>Search</h4>
+    <input type="text" name="q" value="{{ active.q or '' }}" placeholder="Name, street, applicant">
+    <div class="actions"><button class="btn primary sm">Apply</button><button type="button" class="btn sm ghost" data-reset>Reset</button></div>
+  </form>
+  <div class="main">
+    {% if not full %}
+    <div class="paywall">
+      <div><b>Public view.</b> Records delayed {{ FREE_DELAY_DAYS }} days; names, street numbers, phones and applicants hidden.</div><span class="sp"></span>
+      {% if user %}<a class="btn primary sm" href="/pricing">Subscribe to see today's filings</a>{% else %}<a class="btn primary sm" href="/login?next=/app/openings">Start free trial</a>{% endif %}
+    </div>
+    {% endif %}
+    <div class="top">
+      <h2>{{ total }} business{{ '' if total == 1 else 'es' }}</h2>
+      <span class="muted small" id="map-count"></span>
+      <span class="sp"></span>
+      <button class="btn sm ghost" id="map-toggle" type="button">Toggle map</button>
+      {% if full %}<a class="btn sm" href="/export/openings.csv{{ ('?' + request.url.query) if request.url.query else '' }}">Export CSV</a>{% endif %}
+    </div>
+    <div id="map" data-url="/api/openings.geojson" data-kind="openings"></div>
+    <div class="tbl"><table>
+      <thead><tr><th>Latest</th><th>Business</th><th>Category</th><th>Address</th><th>Signals</th><th>Contact</th><th class="r">Score</th></tr></thead>
+      <tbody>{% for o in items %}<tr>
+        <td class="num">{{ o.last_signal }}<span class="sub">first {{ o.first_signal }}</span></td>
+        <td><a class="addr" href="/o/{{ o.opening_id | urlencode }}">{% if o.redacted and o.name %}<span class="redact">{{ o.name }}</span>{% else %}{{ o.name or o.category_label }}{% endif %}</a>{% if o.owner and not o.redacted %}<span class="sub">{{ o.owner }}</span>{% endif %}</td>
+        <td><span class="pill op">{{ o.category_label }}</span></td>
+        <td>{{ o.address }}<span class="sub">{{ o.neighbourhood or o.city }}</span></td>
+        <td><b class="num">{{ o.signal_count }}</b> <span class="muted small">{{ o.signal_types | join(' + ') }}</span></td>
+        <td>{% if o.phone %}{% if o.redacted %}<span class="redact">{{ o.phone }}</span>{% else %}<span class="num">{{ o.phone }}</span>{% endif %}{% else %}<span class="muted">—</span>{% endif %}</td>
+        <td class="r num">{{ o.score }}</td>
+      </tr>{% else %}<tr><td colspan="7" class="muted">Nothing matches. Widen the time window or lower the minimum signals.</td></tr>{% endfor %}</tbody>
+    </table></div>
+    {% if total > items | length %}<p class="muted small" style="margin-top:8px">Showing the first {{ items | length }}. Narrow the filters or export CSV for everything.</p>{% endif %}
+  </div>
+</div>
+{% endblock %}

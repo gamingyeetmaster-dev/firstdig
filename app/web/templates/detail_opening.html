@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}{{ o.name or o.category_label }} · Opening Soon{% endblock %}
+{% block body %}
+<div class="detail">
+  <p class="small"><a href="/app/openings">← Opening Soon</a></p>
+  <div class="head">
+    <div>
+      <span class="pill op">{{ o.category_label }}</span> <span class="pill">{{ o.signal_count }} signal{{ '' if o.signal_count == 1 else 's' }}</span>
+      <h1 style="font-size:34px;margin-top:10px">{% if o.redacted and o.name %}<span class="redact">{{ o.name }}</span>{% else %}{{ o.name or o.category_label }}{% endif %}</h1>
+      <p class="muted">{{ o.address }} · {{ o.neighbourhood or o.city }}{% if o.postal %} · {{ o.postal }}{% endif %}</p>
+    </div>
+    <div style="text-align:right"><div class="num" style="font:800 34px var(--disp)">{{ o.score }}</div><div class="muted small">signal score</div></div>
+  </div>
+  {% if not full %}<div class="paywall"><div><b>Subscribers see</b> the business name, street number, phone where filed, and the applicant.</div><span class="sp"></span><a class="btn primary sm" href="{% if user %}/pricing{% else %}/login?next=/o/{{ o.opening_id | urlencode }}{% endif %}">Unlock</a></div>{% endif %}
+  <div class="two">
+    <div>
+      <dl class="kv">
+        <dt>Applicant</dt><dd>{% if o.owner %}{% if o.redacted %}<span class="redact">{{ o.owner }}</span>{% else %}{{ o.owner }}{% endif %}{% else %}<span class="muted">—</span>{% endif %}</dd>
+        <dt>Phone</dt><dd>{% if o.phone %}{% if o.redacted %}<span class="redact">{{ o.phone }}</span>{% else %}<span class="num">{{ o.phone }}</span>{% endif %}{% else %}<span class="muted">Not on file</span>{% endif %}</dd>
+        <dt>First signal</dt><dd class="num">{{ o.first_signal }}</dd>
+        <dt>Latest signal</dt><dd class="num">{{ o.last_signal }}</dd>
+        {% if o.est_cost %}<dt>Fit-out budget</dt><dd class="num">{{ o.est_cost | money }}</dd>{% endif %}
+      </dl>
+      <h3 style="margin:22px 0 10px">Paper trail</h3>
+      <ul class="timeline">{% for s in o.signal_list %}<li><span class="d">{{ s.date }}</span> · <span class="pill op">{{ s.type }}</span><br><span class="small">{{ s.detail }}</span></li>{% endfor %}</ul>
+    </div>
+    <div>
+      {% if o.lat %}<div id="minimap" data-lat="{{ o.lat }}" data-lon="{{ o.lon }}" data-color="#137F68"></div>
+      {% if full %}<p class="small" style="margin-top:8px"><a href="https://www.google.com/maps/search/?api=1&query={{ (o.address ~ ', Toronto, ON') | urlencode }}" target="_blank" rel="noopener">Open in Google Maps ↗</a> · <a href="https://www.google.com/search?q={{ ((o.name or '') ~ ' ' ~ o.address ~ ' Toronto') | urlencode }}" target="_blank" rel="noopener">Search the web ↗</a></p>{% endif %}{% endif %}
+      <h3 style="margin:18px 0 8px">Nearby in {{ o.neighbourhood or o.city }}</h3>
+      <div class="tbl"><table><tbody>{% for n in nearby %}<tr><td class="num">{{ n.last_signal }}</td><td><a href="/o/{{ n.opening_id | urlencode }}">{% if n.redacted and n.name %}<span class="redact">{{ n.name }}</span>{% else %}{{ n.name or n.category_label }}{% endif %}</a><span class="sub">{{ n.category_label }} · {{ n.address }}</span></td></tr>{% endfor %}</tbody></table></div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,13 @@
+# Optional external cron if you'd rather not run the in-process scheduler.
+# Set repository secrets SITE_URL and CRON_SECRET, then set ENABLE_SCHEDULER=0 on the host.
+name: daily refresh
+on:
+  schedule:
+    - cron: "15 10 * * *"   # 06:15 Toronto (EDT)
+  workflow_dispatch:
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - run: curl -fsS --max-time 900 "${{ secrets.SITE_URL }}/tasks/refresh?key=${{ secrets.CRON_SECRET }}"
+      - run: curl -fsS --max-time 300 "${{ secrets.SITE_URL }}/tasks/digests?key=${{ secrets.CRON_SECRET }}"
