@@ -46,7 +46,7 @@ Anything else with Ubuntu + a persistent disk works the same way (Hetzner CX22 i
 
 ## 4. DNS (2 min)
 
-At Name.com → your domain → DNS records: add an **A record**, host `@`, pointing at the VM's public IP, and a second A record for host `www`. Within a few minutes Caddy on the server fetches a certificate and https://firstdig.app is live.
+At Name.com → your domain → DNS records: add an **A record**, host `@`, pointing at the VM's public IP, and a second A record for host `www`. Within a few minutes Caddy on the server fetches a certificate and https://firstdig.app is live. Check it from your laptop with `tests/smoke.sh https://firstdig.app`.
 
 ## 5. Email: Resend, free tier (10 min)
 

@@ -14,12 +14,14 @@ from fastapi.templating import Jinja2Templates
 from .. import config
 from ..db import connect, get_meta, init_db
 from . import auth, billing, digest, emailer, queries, scheduler
+from .hardening import Hardening
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(name)s %(levelname)s %(message)s")
 log = logging.getLogger("web")
 
 HERE = Path(__file__).parent
 app = FastAPI(title="First Dig", docs_url=None, redoc_url=None)
+app.add_middleware(Hardening)
 app.mount("/static", StaticFiles(directory=str(HERE / "static")), name="static")
 templates = Jinja2Templates(directory=str(HERE / "templates"))
 templates.env.globals.update(
