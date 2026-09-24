@@ -3,4 +3,4 @@
 # Replace the two values below first.
 package_update: true
 runcmd:
-  - [ bash, -c, "curl -fsSL https://raw.githubusercontent.com/YOUR_GITHUB_USER/YOUR_REPO/main/deploy/install.sh | REPO_URL=https://github.com/YOUR_GITHUB_USER/YOUR_REPO.git DOMAIN=YOUR_DOMAIN bash > /var/log/signals-install.log 2>&1" ]
+  - [ bash, -c, "curl -fsSL https://raw.githubusercontent.com/gamingyeetmaster-dev/firstdig/main/deploy/install.sh | REPO_URL=https://github.com/gamingyeetmaster-dev/firstdig.git DOMAIN=firstdig.app bash > /var/log/signals-install.log 2>&1" ]
