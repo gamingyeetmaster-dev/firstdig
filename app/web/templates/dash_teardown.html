@@ -39,9 +39,9 @@
         <td class="num">{{ p.first_filed }}</td>
         <td><a class="addr" href="/p/{{ p.project_id | urlencode }}">{{ p.address }}</a><span class="sub">{{ p.neighbourhood }}{% if p.postal %} · {{ p.postal }}{% endif %}</span></td>
         <td><span class="pill td">{{ p.kind_label }}</span><span class="sub">{{ p.description[:110] }}{% if p.description | length > 110 %}…{% endif %}</span></td>
-        <td>{{ p.stage_label }}</td>
+        <td><span class="stage-cell"><span class="stage-glyph {{ 'done' if p.stage == 'completed' else 'current' }}"></span><span class="lbl">{{ p.stage_label }}</span></span></td>
         <td class="r num">{{ p.est_cost | money }}</td>
-        <td>{% if p.builder_name %}{% if p.redacted %}<span class="redact">{{ p.builder_name }}</span>{% else %}{{ p.builder_name }}{% endif %}{% else %}<span class="muted">—</span>{% endif %}</td>
+        <td>{% if p.builder_name %}{% if p.redacted %}<span class="value-tag">{{ p.builder_name }}</span>{% else %}{{ p.builder_name }}{% endif %}{% else %}<span class="muted">—</span>{% endif %}</td>
         <td class="num">{{ p.last_activity }}</td>
       </tr>{% else %}<tr><td colspan="7" class="muted">Nothing matches. Widen the time window or clear a filter.</td></tr>{% endfor %}</tbody>
     </table></div>

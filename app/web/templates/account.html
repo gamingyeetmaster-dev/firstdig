@@ -15,7 +15,7 @@
   <form method="post" action="/account" class="stack" style="max-width:none">
     <label><input type="checkbox" name="digest_teardown" {% if user.digest_teardown %}checked{% endif %}> Teardown Feed daily digest</label>
     <label><input type="checkbox" name="digest_openings" {% if user.digest_openings %}checked{% endif %}> Opening Soon daily digest</label>
-    <div class="rail" style="border:1px solid var(--rule);border-radius:3px;padding:12px">
+    <div class="picker">
       <h4>Neighbourhoods ({{ areas | length }} selected)</h4>
       <input type="text" id="hood-search" placeholder="Type to find…" autocomplete="off" style="margin-bottom:6px">
       <div class="hoods">{% for h in hoods %}<label><input type="checkbox" name="areas" value="{{ h }}" {% if h in areas %}checked{% endif %}> {{ h }}</label>{% endfor %}</div>

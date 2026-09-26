@@ -3,30 +3,59 @@
 {% block title %}Opening Soon{% endblock %}
 {% block desc %}Toronto restaurants, bars, clinics and shops 60 to 120 days before they open, joined from liquor applications, business licences and fit-out permits.{% endblock %}
 {% block body %}
-<div class="hero"><div class="wrap">
-  <div class="eyebrow">Opening Soon · Toronto</div>
-  <h1>{{ product.tagline }}</h1>
-  <p class="lede">A new restaurant leaves three separate paper trails before it opens: a liquor licence application at the AGCO, a business licence at the City, and a fit-out permit at Toronto Building. Nobody joins them. We do, by address, every day.</p>
-  <div class="cta">
-    <a class="btn primary" href="/login?next=/app/openings">Start a {{ TRIAL_DAYS }}-day free trial</a>
-    <a class="btn" href="/app/openings">Browse the delayed public feed</a>
-    <span class="muted small">${{ product.price_monthly }}/month after the trial. Cancel anytime.</span>
+{% set hero = items[0] if items else None %}
+<section class="stage"><div class="wrap">
+
+  {% if hero %}
+  <article class="track" data-product="openings">
+    <div class="track-kicker">
+      <span class="pill op">Opening Soon</span>
+      <span class="track-code">AGCO &middot; licence &middot; permit</span>
+    </div>
+
+    <h1 class="track-headline">{{ product.tagline }}</h1>
+    <p class="track-lede">A new restaurant leaves three separate paper trails before it opens: a liquor licence application at the AGCO, a business licence at the City, and a fit-out permit at Toronto Building. Nobody joins them. We do, by address &mdash; like the one below, last signal {{ hero.last_signal | nice_date }}.</p>
+
+    <div class="status-rail">
+      {% for t in ['licence','permit','liquor'] %}
+      <div class="status-point">
+        <span class="stage-glyph {{ 'done' if t in hero.signal_types else 'pending' }}"></span>
+        <span class="lbl">{{ {'licence':'Business licence','permit':'Fit-out permit','liquor':'Liquor application'}[t] }}</span>
+      </div>
+      {% endfor %}
+    </div>
+
+    <dl class="track-fields">
+      <div><dt>Category</dt><dd>{{ hero.category_label }}</dd></div>
+      <div><dt>Neighbourhood</dt><dd>{{ hero.neighbourhood or hero.city }}</dd></div>
+      <div><dt>Latest signal</dt><dd class="mono">{{ hero.last_signal | nice_date }}</dd></div>
+      <div><dt>Signals</dt><dd class="mono">{{ hero.signal_count }}</dd></div>
+    </dl>
+
+    <div class="track-cta">
+      <a class="btn primary" href="/login?next=/app/openings">Start a {{ TRIAL_DAYS }}-day free trial</a>
+      <a class="btn" href="/app/openings">Browse the delayed public feed</a>
+      <span class="muted small" style="align-self:center">${{ product.price_monthly }}/month after the trial. Cancel anytime.</span>
+    </div>
+  </article>
+  {% endif %}
+
+  <div class="stat-row">
+    <div class="stat-item big"><b class="num">{{ stats.openings_30d }}</b><span>Businesses with a new signal, 30 days</span></div>
+    <div class="stat-item"><b class="num">{{ stats.openings_multi_30d }}</b><span>With two or more independent signals</span></div>
+    <div class="stat-item"><b class="num">{{ stats.liquor_live }}</b><span>Liquor applications on public notice now</span></div>
+    {% for r in by_cat[:2] %}<div class="stat-item"><b class="num">{{ r.n }}</b><span>{{ r.category.replace('_',' ') | capitalize }} signals, 30 days</span></div>{% endfor %}
   </div>
-  <div class="stats">
-    <div><b class="num">{{ stats.openings_30d }}</b><span>businesses with a new signal, 30 days</span></div>
-    <div><b class="num">{{ stats.openings_multi_30d }}</b><span>with two or more independent signals</span></div>
-    <div><b class="num">{{ stats.liquor_live }}</b><span>liquor applications on public notice right now</span></div>
-    {% for r in by_cat[:2] %}<div><b class="num">{{ r.n }}</b><span>{{ r.category.replace('_',' ') }} signals, 30 days</span></div>{% endfor %}
-  </div>
-</div></div>
+
+</div></section>
 
 <section><div class="wrap">
   <div class="sec-h"><h2>Strongest current signals</h2><span class="muted small">2+ signals, last 90 days, public sample delayed {{ FREE_DELAY_DAYS }} days with names and street numbers hidden</span></div>
   <div class="tbl"><table>
     <thead><tr><th>Latest</th><th>Business</th><th>Category</th><th>Address</th><th>Neighbourhood</th><th>Signals</th></tr></thead>
     <tbody>{% for o in items %}<tr>
-      <td class="num">{{ o.last_signal }}</td>
-      <td><a class="addr" href="/o/{{ o.opening_id | urlencode }}"><span class="redact">{{ o.name or 'Name on file' }}</span></a></td>
+      <td class="num">{{ o.last_signal | nice_date }}</td>
+      <td><a class="addr" href="/o/{{ o.opening_id | urlencode }}"><span class="value-tag">{{ o.name or 'Name on file' }}</span></a></td>
       <td><span class="pill op">{{ o.category_label }}</span></td>
       <td>{{ o.address }}</td>
       <td>{{ o.neighbourhood or o.city }}</td>
@@ -38,11 +67,11 @@
 
 <section class="alt"><div class="wrap">
   <div class="sec-h"><h2>Three filings, one address</h2></div>
-  <div class="how">
-    <div><b>AGCO liquor application</b><p>Every new liquor sales licence goes on public notice for 21 days with the premises name and address. This is the earliest, cleanest signal for restaurants and bars.</p></div>
-    <div><b>City business licence</b><p>Eating and drinking establishments, take-out, personal services, holistic centres, entertainment venues. Issued with the operating name, the licensee and sometimes a phone number.</p></div>
-    <div><b>Fit-out building permit</b><p>Interior alterations for "new restaurant (60 seats)", "dental office fit-out", "tenant fit-up Group E". Comes with the declared construction budget.</p></div>
-    <div><b>Score</b><p>Liquor 40, licence 30, permit 25, plus 20 for each additional independent signal, plus recency and budget. Sort by score and start at the top.</p></div>
+  <div class="differentiators">
+    <div class="differentiator"><b>AGCO liquor application</b><p>Every new liquor sales licence goes on public notice for 21 days with the premises name and address. This is the earliest, cleanest signal for restaurants and bars.</p></div>
+    <div class="differentiator"><b>City business licence</b><p>Eating and drinking establishments, take-out, personal services, holistic centres, entertainment venues. Issued with the operating name, the licensee and sometimes a phone number.</p></div>
+    <div class="differentiator"><b>Fit-out building permit</b><p>Interior alterations for &ldquo;new restaurant (60 seats)&rdquo;, &ldquo;dental office fit-out&rdquo;, &ldquo;tenant fit-up Group E&rdquo;. Comes with the declared construction budget.</p></div>
+    <div class="differentiator"><b>Score</b><p>Liquor 40, licence 30, permit 25, plus 20 for each additional independent signal, plus recency and budget. Sort by score and start at the top.</p></div>
   </div>
 </div></section>
 

@@ -27,7 +27,7 @@ templates = Jinja2Templates(directory=str(HERE / "templates"))
 templates.env.globals.update(
     PRODUCTS=config.PRODUCTS, BUNDLE_PRICE=config.BUNDLE_PRICE_MONTHLY, BASE_URL=config.BASE_URL,
     TRIAL_DAYS=config.TRIAL_DAYS, FREE_DELAY_DAYS=config.FREE_DELAY_DAYS, DEV_MODE=config.DEV_MODE,
-    billing_enabled=billing.enabled, year=dt.date.today().year,
+    billing_enabled=billing.enabled, year=dt.date.today().year, STAGE_LABELS=queries.STAGE_LABELS,
 )
 
 

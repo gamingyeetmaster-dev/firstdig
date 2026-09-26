@@ -60,6 +60,14 @@
   }
 
   document.addEventListener("DOMContentLoaded", () => {
+    const navToggle = document.getElementById("navToggle");
+    const navLinks = document.getElementById("navLinks");
+    if (navToggle && navLinks) {
+      navToggle.addEventListener("click", () => {
+        const open = navLinks.classList.toggle("open");
+        navToggle.setAttribute("aria-expanded", open ? "true" : "false");
+      });
+    }
     const m = document.getElementById("map");
     if (m) {
       const map = initMap(m, m.dataset.url + location.search.replace(/^\?/, m.dataset.url.includes("?") ? "&" : "?"), m.dataset.kind);

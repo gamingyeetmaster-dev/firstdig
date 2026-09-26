@@ -3,35 +3,68 @@
 {% block title %}Teardown Feed{% endblock %}
 {% block desc %}Every teardown, new house, multiplex, garden suite and major addition filed with Toronto Building, mapped and emailed daily.{% endblock %}
 {% block body %}
-<div class="hero"><div class="wrap">
-  <div class="eyebrow">Teardown Feed · Toronto</div>
-  <h1>{{ product.tagline }}</h1>
-  <p class="lede">Toronto Building publishes every permit application. We roll the plumbing, HVAC, drain and demolition rows up into one project per address, classify it, geocode it, attach the builder, and put it on your map the next morning.</p>
-  <div class="cta">
-    <a class="btn primary" href="/login?next=/app/teardown">Start a {{ TRIAL_DAYS }}-day free trial</a>
-    <a class="btn" href="/app/teardown">Browse the delayed public feed</a>
-    <span class="muted small">${{ product.price_monthly }}/month after the trial. Cancel anytime.</span>
+{% set hero = items[0] if items else None %}
+{% set stage_keys = STAGE_LABELS.keys() | list %}
+{% set hero_idx = stage_keys.index(hero.stage) if hero and hero.stage in stage_keys else 0 %}
+<section class="stage"><div class="wrap">
+
+  {% if hero %}
+  <article class="track" data-product="teardown">
+    <div class="track-kicker">
+      <span class="pill td">Teardown Feed</span>
+      <span class="track-code">Toronto Building &middot; permit record</span>
+    </div>
+
+    <h1 class="track-headline">{{ product.tagline }}</h1>
+    <p class="track-lede">Toronto Building publishes every permit application. We roll the plumbing, HVAC, drain and demolition rows up into one project per address, classify it, geocode it, attach the builder, and put it on your map the next morning &mdash; like the one below, filed {{ hero.first_filed | nice_date }}.</p>
+
+    <div class="status-rail">
+      {% for stage_key, stage_label in STAGE_LABELS.items() %}
+      {% set i = loop.index0 %}
+      <div class="status-point">
+        <span class="stage-glyph {{ 'done' if i < hero_idx else ('current' if i == hero_idx else 'pending') }}"></span>
+        <span class="lbl">{{ stage_label }}</span>
+        {% if i == hero_idx %}<span class="dt">{{ hero.first_filed | nice_date }}</span>{% endif %}
+      </div>
+      {% endfor %}
+    </div>
+
+    <dl class="track-fields">
+      <div><dt>Address</dt><dd class="mono">{{ hero.address }}</dd></div>
+      <div><dt>Neighbourhood</dt><dd>{{ hero.neighbourhood }}</dd></div>
+      <div><dt>Project</dt><dd>{{ hero.kind_label }}</dd></div>
+      <div><dt>Declared value</dt><dd class="mono">{{ hero.est_cost | money }}</dd></div>
+    </dl>
+
+    <div class="track-cta">
+      <a class="btn primary" href="/login?next=/app/teardown">Start a {{ TRIAL_DAYS }}-day free trial</a>
+      <a class="btn" href="/app/teardown">Browse the delayed public feed</a>
+      <span class="muted small" style="align-self:center">${{ product.price_monthly }}/month after the trial. Cancel anytime.</span>
+    </div>
+  </article>
+  {% endif %}
+
+  <div class="stat-row">
+    <div class="stat-item big"><b class="num">{{ stats.projects_30d }}</b><span>Projects filed, last 30 days</span></div>
+    <div class="stat-item"><b class="num">{{ by_kind.get('teardown', 0) + by_kind.get('new_house', 0) }}</b><span>Teardowns and new houses</span></div>
+    <div class="stat-item"><b class="num">{{ by_kind.get('multiplex', 0) }}</b><span>Multiplexes</span></div>
+    <div class="stat-item"><b class="num">{{ by_kind.get('garden_suite', 0) }}</b><span>Garden and laneway suites</span></div>
+    <div class="stat-item"><b class="num">{{ by_kind.get('major_addition', 0) }}</b><span>Additions over $150k</span></div>
   </div>
-  <div class="stats">
-    <div><b class="num">{{ stats.projects_30d }}</b><span>projects filed, last 30 days</span></div>
-    <div><b class="num">{{ by_kind.get('teardown', 0) + by_kind.get('new_house', 0) }}</b><span>teardowns and new houses</span></div>
-    <div><b class="num">{{ by_kind.get('multiplex', 0) }}</b><span>multiplexes</span></div>
-    <div><b class="num">{{ by_kind.get('garden_suite', 0) }}</b><span>garden and laneway suites</span></div>
-    <div><b class="num">{{ by_kind.get('major_addition', 0) }}</b><span>additions over $150k</span></div>
-  </div>
-</div></div>
+
+</div></section>
 
 <section><div class="wrap">
   <div class="sec-h"><h2>What lands in the feed</h2><span class="muted small">Last 60 days, public sample delayed {{ FREE_DELAY_DAYS }} days, builder names hidden</span></div>
   <div class="tbl"><table>
     <thead><tr><th>Filed</th><th>Address</th><th>Neighbourhood</th><th>Project</th><th>Stage</th><th>Builder</th></tr></thead>
     <tbody>{% for p in items %}<tr>
-      <td class="num">{{ p.first_filed }}</td>
+      <td class="num">{{ p.first_filed | nice_date }}</td>
       <td><a class="addr" href="/p/{{ p.project_id | urlencode }}">{{ p.address }}</a></td>
       <td>{{ p.neighbourhood }}</td>
       <td><span class="pill td">{{ p.kind_label }}</span> {{ p.headline.split(' · ')[1:] | join(' · ') }}</td>
-      <td>{{ p.stage_label }}</td>
-      <td>{% if p.builder_name %}<span class="redact">{{ p.builder_name }}</span>{% else %}<span class="muted">—</span>{% endif %}</td>
+      <td><span class="stage-cell"><span class="stage-glyph {{ 'done' if p.stage == 'completed' else 'current' }}"></span><span class="lbl muted">{{ p.stage_label }}</span></span></td>
+      <td>{% if p.builder_name %}<span class="value-tag">{{ p.builder_name }}</span>{% else %}<span class="muted">—</span>{% endif %}</td>
     </tr>{% endfor %}</tbody>
   </table></div>
   <p style="margin-top:12px"><a class="btn" href="/app/teardown">Open the full dashboard with map and filters</a></p>
@@ -39,13 +72,13 @@
 
 <section class="alt"><div class="wrap">
   <div class="sec-h"><h2>Who uses it, and how</h2></div>
-  <div class="how">
-    <div><b>Pool and landscape</b><p>A teardown filed today has a bare yard in ten months. Send a letter to the owner and the builder while the drawings are still open.</p></div>
-    <div><b>Fence, railing, deck</b><p>Filter to "Teardown", "New house" and "Major addition" in your service area. The permit lists the declared value so you can size the job.</p></div>
-    <div><b>Windows, doors, millwork, closets</b><p>Builders spec these 3 to 6 months after issuance. The feed shows stage: Applied, Issued, Under construction.</p></div>
-    <div><b>Realtors and lenders</b><p>Multiplex and garden-suite filings are future listings and refinances. See them by neighbourhood before the sign goes up.</p></div>
-    <div><b>Trades looking for GCs</b><p>The builder name is on the permit. Fifty builders file most of the teardowns in the city. Now you know which ones are busy this month.</p></div>
-    <div><b>Movers and storage</b><p>A major addition or underpinning means a family moving out for six months. That is a moving job and a storage unit.</p></div>
+  <div class="differentiators">
+    <div class="differentiator"><b>Pool and landscape</b><p>A teardown filed today has a bare yard in ten months. Send a letter to the owner and the builder while the drawings are still open.</p></div>
+    <div class="differentiator"><b>Fence, railing, deck</b><p>Filter to &ldquo;Teardown&rdquo;, &ldquo;New house&rdquo; and &ldquo;Major addition&rdquo; in your service area. The permit lists the declared value so you can size the job.</p></div>
+    <div class="differentiator"><b>Windows, doors, millwork, closets</b><p>Builders spec these 3 to 6 months after issuance. The feed shows stage: Applied, Issued, Under construction.</p></div>
+    <div class="differentiator"><b>Realtors and lenders</b><p>Multiplex and garden-suite filings are future listings and refinances. See them by neighbourhood before the sign goes up.</p></div>
+    <div class="differentiator"><b>Trades looking for GCs</b><p>The builder name is on the permit. Fifty builders file most of the teardowns in the city. Now you know which ones are busy this month.</p></div>
+    <div class="differentiator"><b>Movers and storage</b><p>A major addition or underpinning means a family moving out for six months. That is a moving job and a storage unit.</p></div>
   </div>
 </div></section>
 

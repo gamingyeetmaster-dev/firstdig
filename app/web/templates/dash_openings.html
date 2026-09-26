@@ -37,11 +37,11 @@
       <thead><tr><th>Latest</th><th>Business</th><th>Category</th><th>Address</th><th>Signals</th><th>Contact</th><th class="r">Score</th></tr></thead>
       <tbody>{% for o in items %}<tr>
         <td class="num">{{ o.last_signal }}<span class="sub">first {{ o.first_signal }}</span></td>
-        <td><a class="addr" href="/o/{{ o.opening_id | urlencode }}">{% if o.redacted and o.name %}<span class="redact">{{ o.name }}</span>{% else %}{{ o.name or o.category_label }}{% endif %}</a>{% if o.owner and not o.redacted %}<span class="sub">{{ o.owner }}</span>{% endif %}</td>
+        <td><a class="addr" href="/o/{{ o.opening_id | urlencode }}">{% if o.redacted and o.name %}<span class="value-tag">{{ o.name }}</span>{% else %}{{ o.name or o.category_label }}{% endif %}</a>{% if o.owner and not o.redacted %}<span class="sub">{{ o.owner }}</span>{% endif %}</td>
         <td><span class="pill op">{{ o.category_label }}</span></td>
         <td>{{ o.address }}<span class="sub">{{ o.neighbourhood or o.city }}</span></td>
         <td><b class="num">{{ o.signal_count }}</b> <span class="muted small">{{ o.signal_types | join(' + ') }}</span></td>
-        <td>{% if o.phone %}{% if o.redacted %}<span class="redact">{{ o.phone }}</span>{% else %}<span class="num">{{ o.phone }}</span>{% endif %}{% else %}<span class="muted">—</span>{% endif %}</td>
+        <td>{% if o.phone %}{% if o.redacted %}<span class="value-tag">{{ o.phone }}</span>{% else %}<span class="num">{{ o.phone }}</span>{% endif %}{% else %}<span class="muted">—</span>{% endif %}</td>
         <td class="r num">{{ o.score }}</td>
       </tr>{% else %}<tr><td colspan="7" class="muted">Nothing matches. Widen the time window or lower the minimum signals.</td></tr>{% endfor %}</tbody>
     </table></div>

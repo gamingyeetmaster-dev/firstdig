@@ -4,3 +4,9 @@ data/*.db*
 data/geo-index.pkl
 __pycache__/
 *.pyc
+.DS_Store
+.claude/settings.local.json
+.claude/worktrees/
+.claude/agents/
+.claude/skills/
+.impeccable/
