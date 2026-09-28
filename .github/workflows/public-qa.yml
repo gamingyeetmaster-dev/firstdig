@@ -1,0 +1,57 @@
+name: Public Snapshot QA
+
+on:
+  push:
+    branches: [public-static]
+  workflow_dispatch:
+
+jobs:
+  verify-public:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Wait for static deploy and verify populated data
+        env:
+          URL: https://firstdig-public.onrender.com
+        run: |
+          set -euo pipefail
+          ok=0
+          for i in $(seq 1 36); do
+            code=$(curl -sS -o /tmp/t.json -w '%{http_code}' --max-time 20 "$URL/data/teardown.json" || true)
+            if [ "$code" = "200" ]; then
+              projects=$(python - <<'PY'
+import json
+with open('/tmp/t.json') as f:
+    o=json.load(f)
+print(len(o.get('records', [])))
+PY
+)
+              if [ "$projects" -gt 0 ]; then ok=1; break; fi
+            fi
+            sleep 10
+          done
+          test "$ok" = "1"
+          echo "teardown records=$projects"
+          curl -fsS --max-time 20 "$URL/data/openings.json" -o /tmp/o.json
+          python - <<'PY'
+import json
+for path,name in [('/tmp/t.json','teardown'),('/tmp/o.json','openings')]:
+    with open(path) as f: o=json.load(f)
+    n=len(o.get('records',[]))
+    assert n>0, (name,n)
+    print(name,'records=',n,'declared_total=',o.get('total'),'generated_at=',o.get('generated_at'))
+PY
+      - name: Verify public pages and no dynamic cold-start dependency
+        env:
+          URL: https://firstdig-public.onrender.com
+        run: |
+          set -euo pipefail
+          for p in / /teardown /openings /pricing /methodology /terms /static/public-dashboard.js; do
+            out=$(curl -sS -L -o /dev/null -w '%{http_code} %{time_total}' --max-time 20 "$URL$p")
+            echo "$p $out"
+            code=$(echo "$out" | awk '{print $1}')
+            test "$code" = "200"
+          done
+          html=$(curl -fsS --max-time 20 "$URL/teardown")
+          echo "$html" | grep -q 'public-dashboard.js'
+          echo "$html" | grep -q 'First Dig'
