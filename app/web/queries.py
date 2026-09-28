@@ -25,6 +25,22 @@ def parse_list(v):
     return [x for x in (v or "").split(",") if x]
 
 
+def bounded_int(v, default, low, high):
+    try:
+        n = int(v)
+    except (TypeError, ValueError):
+        return default
+    return min(high, max(low, n))
+
+
+def nonnegative_float(v):
+    try:
+        n = float(v)
+    except (TypeError, ValueError):
+        return None
+    return n if n >= 0 else None
+
+
 def project_filters(args, full_access):
     """Build WHERE clause from query args. Returns (sql, params, active_filters)."""
     where, params, active = [], [], {}
@@ -43,16 +59,16 @@ def project_filters(args, full_access):
         where.append("stage IN (%s)" % ",".join("?" * len(stages)))
         params += stages
         active["stages"] = stages
-    days = int(args.get("days") or 30)
+    days = bounded_int(args.get("days"), 30, 1, 3650)
     active["days"] = days
     since = (dt.date.today() - dt.timedelta(days=days)).isoformat()
     where.append("last_activity >= ?")
     params.append(since)
-    mincost = args.get("mincost")
-    if mincost:
+    mincost = nonnegative_float(args.get("mincost"))
+    if mincost is not None:
         where.append("est_cost >= ?")
-        params.append(float(mincost))
-        active["mincost"] = float(mincost)
+        params.append(mincost)
+        active["mincost"] = mincost
     q = (args.get("q") or "").strip()
     if q:
         where.append("(address LIKE ? OR builder_name LIKE ? OR description LIKE ?)")
@@ -105,11 +121,11 @@ def opening_filters(args, full_access):
         where.append("category IN (%s)" % ",".join("?" * len(cats)))
         params += cats
         active["cats"] = cats
-    minsig = int(args.get("minsig") or 1)
+    minsig = bounded_int(args.get("minsig"), 1, 1, 20)
     active["minsig"] = minsig
     where.append("signal_count >= ?")
     params.append(minsig)
-    days = int(args.get("days") or 45)
+    days = bounded_int(args.get("days"), 45, 1, 3650)
     active["days"] = days
     where.append("last_signal >= ?")
     params.append((dt.date.today() - dt.timedelta(days=days)).isoformat())
