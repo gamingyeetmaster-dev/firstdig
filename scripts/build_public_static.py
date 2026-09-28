@@ -7,6 +7,7 @@ import json
 import os
 import shutil
 import sys
+import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -35,17 +36,24 @@ def write(path: Path, content: str):
 
 
 def rewrite_common(html: str, dashboard=False) -> str:
-    # Public browse stays on the static origin; account actions use the dynamic backend.
+    # Public browse stays entirely on the static origin. Authentication is not
+    # exposed until persistent account storage is production-ready.
+    access = "mailto:jacksonjameslang@gmail.com?subject=First%20Dig%20early%20access"
     html = html.replace('href="/app/teardown"', 'href="/teardown"')
     html = html.replace('href="/app/openings"', 'href="/openings"')
-    html = html.replace('href="/login?next=/app/teardown"', f'href="{BACKEND}/login?next=/app/teardown"')
-    html = html.replace('href="/login?next=/app/openings"', f'href="{BACKEND}/login?next=/app/openings"')
-    html = html.replace('href="/login"', f'href="{BACKEND}/login"')
-    html = html.replace('href="/account"', f'href="{BACKEND}/account"')
-    html = html.replace('action="/logout"', f'action="{BACKEND}/logout"')
-    html = html.replace('href="mailto:hello@example.com"', 'href="mailto:jacksonjameslang@gmail.com"')
+    html = re.sub(r'href="/login(?:\\?[^"]*)?"', f'href="{access}"', html)
+    html = html.replace('href="/account"', f'href="{access}"')
+    html = html.replace('action="/logout"', f'action="{access}"')
+    html = html.replace('>Start free trial<', '>Request early access<')
+    html = html.replace('>Sign in<', '>Request access<')
+    html = html.replace('>Subscribe to see today\'s filings<', '>Request access to current filings<')
+    html = html.replace('href="mailto:hello@example.com"', 'href="mailto:jacksonjameslang@gmail.com?subject=First%20Dig"')
+    # Prevent redacted public record links from falling through to the sleeping
+    # dynamic backend. The public dashboard itself carries the usable signal.
+    html = re.sub(r'href="/p/[^"]+"', 'href="/teardown"', html)
+    html = re.sub(r'href="/o/[^"]+"', 'href="/openings"', html)
     if dashboard:
-        html = html.replace('/static/app.js?v=2', '/static/public-dashboard.js?v=1')
+        html = html.replace('/static/app.js?v=2', '/static/public-dashboard.js?v=2')
     return html
 
 
