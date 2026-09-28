@@ -6,9 +6,11 @@ billing and private detail routes remain on the backend service.
 import json
 import os
 import shutil
+import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
 OUT = ROOT / "public_static"
 BUILD_DATA = ROOT / ".public-build-data"
 BACKEND = os.getenv("FIRSTDIG_BACKEND", "https://first-dig-night-shift.onrender.com").rstrip("/")
