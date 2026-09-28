@@ -18,12 +18,12 @@
   function normalizedState(kind){
     const p=qs();
     if(kind==="teardown") return {
-      days:Math.max(1,Math.min(3650,parseInt(p.get("days")||"30",10)||30)),
+      days:Math.max(1,Math.min(3650,parseInt(p.get("days")||"90",10)||90)),
       kinds:list(p,"kinds"),stages:list(p,"stages"),hoods:list(p,"hoods"),
       mincost:Math.max(0,Number(p.get("mincost")||0)||0),q:(p.get("q")||"").trim().toLowerCase()
     };
     return {
-      days:Math.max(1,Math.min(3650,parseInt(p.get("days")||"45",10)||45)),
+      days:Math.max(1,Math.min(3650,parseInt(p.get("days")||"90",10)||90)),
       minsig:Math.max(1,Math.min(20,parseInt(p.get("minsig")||"1",10)||1)),
       city:p.get("city")||"toronto",cats:list(p,"cats"),hoods:list(p,"hoods"),
       q:(p.get("q")||"").trim().toLowerCase()
