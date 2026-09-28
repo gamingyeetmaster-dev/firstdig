@@ -16,16 +16,11 @@ jobs:
         run: |
           set -euo pipefail
           ok=0
+          projects=0
           for i in $(seq 1 36); do
             code=$(curl -sS -o /tmp/t.json -w '%{http_code}' --max-time 20 "$URL/data/teardown.json" || true)
             if [ "$code" = "200" ]; then
-              projects=$(python - <<'PY'
-import json
-with open('/tmp/t.json') as f:
-    o=json.load(f)
-print(len(o.get('records', [])))
-PY
-)
+              projects=$(python -c "import json; print(len(json.load(open('/tmp/t.json')).get('records', [])))")
               if [ "$projects" -gt 0 ]; then ok=1; break; fi
             fi
             sleep 10
@@ -33,15 +28,9 @@ PY
           test "$ok" = "1"
           echo "teardown records=$projects"
           curl -fsS --max-time 20 "$URL/data/openings.json" -o /tmp/o.json
-          python - <<'PY'
-import json
-for path,name in [('/tmp/t.json','teardown'),('/tmp/o.json','openings')]:
-    with open(path) as f: o=json.load(f)
-    n=len(o.get('records',[]))
-    assert n>0, (name,n)
-    print(name,'records=',n,'declared_total=',o.get('total'),'generated_at=',o.get('generated_at'))
-PY
-      - name: Verify public pages and no dynamic cold-start dependency
+          python -c "import json; a=json.load(open('/tmp/t.json')); b=json.load(open('/tmp/o.json')); assert len(a.get('records',[]))>0; assert len(b.get('records',[]))>0; print('teardown',len(a['records']),'total',a.get('total'),'generated',a.get('generated_at')); print('openings',len(b['records']),'total',b.get('total'),'generated',b.get('generated_at'))"
+
+      - name: Verify public pages and response times
         env:
           URL: https://firstdig-public.onrender.com
         run: |
@@ -52,6 +41,6 @@ PY
             code=$(echo "$out" | awk '{print $1}')
             test "$code" = "200"
           done
-          html=$(curl -fsS --max-time 20 "$URL/teardown")
-          echo "$html" | grep -q 'public-dashboard.js'
-          echo "$html" | grep -q 'First Dig'
+          curl -fsS --max-time 20 "$URL/teardown" -o /tmp/page.html
+          grep -q 'public-dashboard.js' /tmp/page.html
+          grep -q 'First Dig' /tmp/page.html
