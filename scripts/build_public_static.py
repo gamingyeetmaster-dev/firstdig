@@ -76,6 +76,13 @@ def main():
             con, {"days": "3650", "city": "all", "minsig": "1"},
             full_access=False, limit=20000
         )
+        # Fail closed: an empty default browse experience must never replace a
+        # previously good production snapshot.
+        default_projects = queries.projects(con, {"days": "90"}, full_access=False, limit=20000)[1]
+        default_openings = queries.openings(con, {"days": "90", "city": "toronto", "minsig": "1"}, full_access=False, limit=20000)[1]
+        if default_projects <= 0 or default_openings <= 0:
+            raise RuntimeError(f"refusing empty public snapshot: projects={default_projects}, openings={default_openings}")
+        print(f"public defaults: projects_90d={default_projects}; openings_90d={default_openings}")
         last = queries.stats(con).get("last_run")
 
     data_dir = OUT / "data"
@@ -109,7 +116,7 @@ def main():
 
     # Public dashboards. Write both historical /app/... paths and clean URLs.
     for product in ("teardown", "openings"):
-        r = client.get(f"/app/{product}")
+        r = client.get(f"/app/{product}?days=90")
         r.raise_for_status()
         html = rewrite_common(r.text, dashboard=True)
         write(OUT / product / "index.html", html)
