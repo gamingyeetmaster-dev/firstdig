@@ -1,0 +1,54 @@
+name: First Dig QA
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  app-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt pytest
+      - run: pytest -q tests/test_app.py
+
+  live-smoke:
+    needs: app-tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      LIVE_URL: https://first-dig-night-shift.onrender.com
+    steps:
+      - name: Wait for public service
+        run: |
+          set -euo pipefail
+          for i in $(seq 1 30); do
+            code=$(curl -L -sS -o /dev/null -w '%{http_code}' --max-time 20 "$LIVE_URL/" || true)
+            if [ "$code" = "200" ]; then exit 0; fi
+            sleep 10
+          done
+          echo "public service never returned 200"
+          exit 1
+      - name: Public route smoke
+        run: |
+          set -euo pipefail
+          for p in / /teardown /openings /pricing /methodology /terms /app/teardown /app/openings /login /health /robots.txt '/api/teardown.geojson?days=60' '/api/openings.geojson?days=90&minsig=2'; do
+            code=$(curl -L -sS -o /dev/null -w '%{http_code}' --max-time 30 "$LIVE_URL$p")
+            test "$code" = "200" || { echo "$p -> $code"; exit 1; }
+          done
+          head_code=$(curl -sS -I -o /dev/null -w '%{http_code}' --max-time 30 "$LIVE_URL/")
+          test "$head_code" = "200"
+          cron_code=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 30 "$LIVE_URL/tasks/refresh?key=wrong")
+          test "$cron_code" = "403"
+      - name: Security headers
+        run: |
+          set -euo pipefail
+          headers=$(curl -sS -D - -o /dev/null --max-time 30 "$LIVE_URL/")
+          echo "$headers" | grep -qi '^x-content-type-options: nosniff'
+          echo "$headers" | grep -qi '^x-frame-options: DENY'
+          echo "$headers" | grep -qi '^strict-transport-security:'
