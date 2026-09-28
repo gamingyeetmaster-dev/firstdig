@@ -1,8 +1,12 @@
 import datetime as dt
 import os
 import re
+import sys
 import tempfile
 from pathlib import Path
+
+# GitHub Actions/pytest can put tests/ ahead of the repository root.
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 _tmp = tempfile.mkdtemp(prefix="firstdig-test-")
 os.environ["DATA_DIR"] = _tmp
