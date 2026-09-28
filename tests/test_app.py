@@ -23,7 +23,7 @@ from app.db import connect, init_db, set_meta
 from app.web import auth
 from app.web.main import app
 
-client = TestClient(app, raise_server_exceptions=False, follow_redirects=False)
+client = TestClient(app, base_url="https://example.test", raise_server_exceptions=False, follow_redirects=False)
 
 
 def setup_module():
