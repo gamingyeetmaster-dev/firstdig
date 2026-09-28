@@ -1,0 +1,24 @@
+name: Refresh public snapshot
+
+on:
+  schedule:
+    - cron: "17 9 * * *"
+  workflow_dispatch:
+
+jobs:
+  touch:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: public-static
+      - name: Trigger static rebuild
+        run: |
+          date -u +"%Y-%m-%dT%H:%M:%SZ" > PUBLIC_SNAPSHOT_REFRESH
+          git config user.name "First Dig Snapshot Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add PUBLIC_SNAPSHOT_REFRESH
+          git commit -m "Refresh public data snapshot" || exit 0
+          git push origin public-static
