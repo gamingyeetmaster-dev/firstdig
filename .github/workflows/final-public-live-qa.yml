@@ -1,0 +1,31 @@
+name: Final Public Live QA
+
+on:
+  push:
+    branches: [qa-public-live]
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Verify current live static experience
+        env:
+          URL: https://firstdig-public.onrender.com
+        run: |
+          set -euo pipefail
+          curl -fsS --max-time 20 "$URL/teardown" -o /tmp/t.html
+          curl -fsS --max-time 20 "$URL/openings" -o /tmp/o.html
+          curl -fsS --max-time 20 "$URL/data/teardown.json" -o /tmp/t.json
+          curl -fsS --max-time 20 "$URL/data/openings.json" -o /tmp/o.json
+          python -c "import json; a=json.load(open('/tmp/t.json')); b=json.load(open('/tmp/o.json')); assert len(a['records'])>0 and len(b['records'])>0; print('records',len(a['records']),len(b['records']))"
+          grep -Eq '[1-9][0-9]* projects' /tmp/t.html
+          grep -Eq '[1-9][0-9]* businesses' /tmp/o.html
+          grep -q 'Request access' /tmp/t.html
+          ! grep -q 'Start free trial' /tmp/t.html
+          ! grep -q 'first-dig-night-shift.onrender.com/p/' /tmp/t.html
+          for p in / /teardown /openings /pricing /methodology /terms /static/public-dashboard.js; do
+            out=$(curl -sS -L -o /dev/null -w '%{http_code} %{time_total}' --max-time 20 "$URL$p")
+            echo "$p $out"
+            test "$(echo "$out"|awk '{print $1}')" = "200"
+          done
