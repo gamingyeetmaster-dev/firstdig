@@ -4,7 +4,7 @@ import datetime as dt
 import io
 import logging
 from pathlib import Path
-from urllib.parse import quote
+from urllib.parse import quote, urlsplit
 
 from fastapi import Depends, FastAPI, Form, HTTPException, Request
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse, Response, StreamingResponse
@@ -96,6 +96,16 @@ def require_login(c: Ctx):
         raise HTTPException(status_code=303, headers={"Location": f"/login?next={c.request.url.path}"})
 
 
+def safe_next(value, default="/app/teardown"):
+    """Allow only same-site absolute paths for post-login redirects."""
+    if not value or not value.startswith("/") or value.startswith("//"):
+        return default
+    p = urlsplit(value)
+    if p.scheme or p.netloc:
+        return default
+    return value
+
+
 @app.exception_handler(HTTPException)
 async def _redirects(request, exc):
     if exc.status_code == 303:
@@ -104,6 +114,11 @@ async def _redirects(request, exc):
 
 
 # ---------- marketing ----------
+
+@app.head("/")
+def home_head():
+    return Response(status_code=200)
+
 
 @app.get("/", response_class=HTMLResponse)
 def home(c: Ctx = Depends(ctx)):
@@ -251,16 +266,18 @@ def export_csv(product: str, c: Ctx = Depends(ctx)):
 
 @app.get("/login", response_class=HTMLResponse)
 def login_page(c: Ctx = Depends(ctx), next: str = "/app/teardown"):
+    next = safe_next(next)
     return render(c, "login.html", next=next)
 
 
 @app.post("/login", response_class=HTMLResponse)
 def login_post(c: Ctx = Depends(ctx), email: str = Form(...), next: str = Form("/app/teardown")):
+    next = safe_next(next)
     email = email.strip().lower()
     if "@" not in email or len(email) > 200:
         return render(c, "login.html", next=next, error="That doesn't look like an email address.")
     token = auth.create_magic_link(c.con, email)
-    link = f"{config.BASE_URL}/auth/{token}?next={next}"
+    link = f"{config.BASE_URL}/auth/{token}?next={quote(next, safe='')}"
     html = templates.get_template("email_login.html").render(link=link, base_url=config.BASE_URL)
     r = emailer.send(email, "Your sign-in link for First Dig", html, f"Sign in: {link}")
     dev_link = link if (config.DEV_MODE and not r["delivered"]) else None
@@ -269,10 +286,11 @@ def login_post(c: Ctx = Depends(ctx), email: str = Form(...), next: str = Form("
 
 @app.get("/auth/{token}")
 def auth_token(token: str, c: Ctx = Depends(ctx), next: str = "/app/teardown"):
+    next = safe_next(next)
     user = auth.consume_magic_link(c.con, token)
     if not user:
         return render(c, "login.html", next=next, error="That link has expired or was already used. Request a new one.")
-    resp = RedirectResponse(next if next.startswith("/") else "/app/teardown", status_code=303)
+    resp = RedirectResponse(next, status_code=303)
     resp.set_cookie(auth.COOKIE, auth.session_cookie_value(user["id"]), max_age=60 * 60 * 24 * 90, httponly=True, samesite="lax",
                     secure=config.BASE_URL.startswith("https"))
     return resp
