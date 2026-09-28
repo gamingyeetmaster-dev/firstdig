@@ -64,7 +64,7 @@
     if(kind==="teardown"){
       body.innerHTML=rows.map(r=>'<tr>'+
         '<td class="num">'+esc(r.first_filed||"")+'</td>'+
-        '<td><a class="addr" href="'+BACKEND+'/p/'+encodeURIComponent(r.project_id)+'">'+esc(r.address||"")+'</a><span class="sub">'+esc(r.neighbourhood||"")+(r.postal?' · '+esc(r.postal):'')+'</span></td>'+
+        '<td><span class="addr">'+esc(r.address||"")+'</span><span class="sub">'+esc(r.neighbourhood||"")+(r.postal?' · '+esc(r.postal):'')+'</span></td>'+
         '<td><span class="pill td">'+esc(r.kind_label||r.kind||"")+'</span><span class="sub">'+esc((r.description||"").slice(0,110))+'</span></td>'+
         '<td><span class="stage-cell"><span class="stage-glyph '+(r.stage==="completed"?"done":"current")+'"></span><span class="lbl">'+esc(r.stage_label||r.stage||"")+'</span></span></td>'+
         '<td class="r num">'+money(r.est_cost)+'</td>'+
@@ -73,7 +73,7 @@
     } else {
       body.innerHTML=rows.map(r=>'<tr>'+
         '<td class="num">'+esc(r.last_signal||"")+'<span class="sub">first '+esc(r.first_signal||"")+'</span></td>'+
-        '<td><a class="addr" href="'+BACKEND+'/o/'+encodeURIComponent(r.opening_id)+'">'+(r.name?'<span class="value-tag">'+esc(r.name)+'</span>':esc(r.category_label||""))+'</a></td>'+
+        '<td><span class="addr">'+(r.name?'<span class="value-tag">'+esc(r.name)+'</span>':esc(r.category_label||""))+'</span></td>'+
         '<td><span class="pill op">'+esc(r.category_label||r.category||"")+'</span></td>'+
         '<td>'+esc(r.address||"")+'<span class="sub">'+esc(r.neighbourhood||r.city||"")+'</span></td>'+
         '<td><b class="num">'+esc(r.signal_count||0)+'</b> <span class="muted small">'+esc((r.signal_types||[]).join(" + "))+'</span></td>'+
@@ -104,10 +104,9 @@
       },
       onEachFeature:(f,l)=>{
         const r=f.properties;
-        const href=kind==="teardown"?BACKEND+"/p/"+encodeURIComponent(r.project_id):BACKEND+"/o/"+encodeURIComponent(r.opening_id);
         const title=kind==="teardown"?(r.address||""):(r.name||r.category_label||"");
         const sub=kind==="teardown"?((r.headline||r.kind_label||"")+" · "+(r.stage_label||r.stage||"")+" · filed "+(r.first_filed||"")):((r.address||"")+" · "+(r.signal_count||0)+" signals · "+(r.last_signal||""));
-        l.bindPopup("<b>"+esc(title)+"</b><br>"+esc(sub)+"<br><span style='color:#777'>"+esc(r.neighbourhood||"")+"</span><br><a href='"+href+"'>Open record →</a>");
+        l.bindPopup("<b>"+esc(title)+"</b><br>"+esc(sub)+"<br><span style='color:#777'>"+esc(r.neighbourhood||"")+"</span>");
       }
     }).addTo(map);
     if(features.length){
