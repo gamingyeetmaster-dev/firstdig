@@ -1,12 +1,13 @@
 """Small protections for a public deployment: rate limits on the login
 endpoint, security headers, and an Origin check on state-changing forms."""
 import time
+from urllib.parse import urlparse
 from collections import defaultdict, deque
 
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import PlainTextResponse
 
-from ..config import BASE_URL
+from ..config import BASE_URL, DEV_MODE
 
 _buckets = defaultdict(deque)   # key -> deque of timestamps
 
@@ -27,6 +28,22 @@ def client_ip(request):
     return (fwd.split(",")[0].strip() if fwd else (request.client.host if request.client else "?"))
 
 
+def origin_allowed(origin):
+    """Require an exact browser origin match; suffix matches are not safe."""
+    if not origin:
+        return True
+    try:
+        got = urlparse(origin)
+        base = urlparse(BASE_URL)
+    except ValueError:
+        return False
+    if got.scheme == base.scheme and got.netloc.lower() == base.netloc.lower():
+        return True
+    # Local development convenience without weakening production hostname checks.
+    local = {"127.0.0.1", "localhost"}
+    return bool(DEV_MODE and got.hostname in local and base.hostname in local)
+
+
 class Hardening(BaseHTTPMiddleware):
     async def dispatch(self, request, call_next):
         path = request.url.path
@@ -43,7 +60,7 @@ class Hardening(BaseHTTPMiddleware):
         # Origin check on browser form posts (cookie is SameSite=Lax too)
         if request.method == "POST" and path not in ("/billing/webhook",):
             origin = request.headers.get("origin") or ""
-            if origin and not origin.rstrip("/").endswith(BASE_URL.split("://", 1)[-1].rstrip("/")) and not origin.startswith("http://127.0.0.1"):
+            if not origin_allowed(origin):
                 return PlainTextResponse("Bad origin", status_code=403)
 
         resp = await call_next(request)
