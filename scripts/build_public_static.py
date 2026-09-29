@@ -4,6 +4,8 @@ The public browse experience is intentionally static/CDN-served. Dynamic account
 billing and private detail routes remain on the backend service.
 """
 import json
+import html as html_lib
+import datetime as dt
 import os
 import shutil
 import sys
@@ -15,6 +17,7 @@ sys.path.insert(0, str(ROOT))
 OUT = ROOT / "public_static"
 BUILD_DATA = ROOT / ".public-build-data"
 BACKEND = os.getenv("FIRSTDIG_BACKEND", "https://first-dig-night-shift.onrender.com").rstrip("/")
+SITE = "https://firstdig.app"
 
 # Isolate build-time data so this script is deterministic.
 os.environ["DATA_DIR"] = str(BUILD_DATA)
@@ -33,6 +36,93 @@ from fastapi.testclient import TestClient
 def write(path: Path, content: str):
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(content, encoding="utf-8")
+
+
+def seoify(document: str, path: str, schema=None) -> str:
+    """Add canonical/search/social metadata to each static page."""
+    canonical = SITE + (path if path.startswith("/") else "/" + path)
+    title_match = re.search(r"<title>(.*?)</title>", document, flags=re.I | re.S)
+    desc_match = re.search(r'<meta name="description" content="([^"]*)">', document, flags=re.I)
+    title = html_lib.unescape(title_match.group(1).strip()) if title_match else "First Dig"
+    desc = html_lib.unescape(desc_match.group(1).strip()) if desc_match else "Toronto permit intelligence from First Dig."
+
+    graph = []
+    if path == "/":
+        graph.extend([
+            {
+                "@type": "Organization",
+                "@id": SITE + "/#organization",
+                "name": "First Dig",
+                "alternateName": "FirstDig",
+                "url": SITE + "/",
+                "description": "Toronto construction and business-opening intelligence built from public filings.",
+                "founder": {
+                    "@type": "Person",
+                    "name": "Jackson Lang",
+                    "affiliation": {"@type": "CollegeOrUniversity", "name": "University of Toronto"}
+                }
+            },
+            {
+                "@type": "WebSite",
+                "@id": SITE + "/#website",
+                "url": SITE + "/",
+                "name": "First Dig",
+                "alternateName": "FirstDig",
+                "publisher": {"@id": SITE + "/#organization"}
+            }
+        ])
+    elif path in ("/teardown", "/openings"):
+        name = "Toronto Building Permits and Construction Leads" if path == "/teardown" else "Toronto Businesses Opening Soon"
+        keywords = (
+            ["Toronto building permits", "construction leads Toronto", "Toronto demolition permits", "Toronto new house permits"]
+            if path == "/teardown"
+            else ["Toronto restaurants opening soon", "new businesses Toronto", "Toronto business licences", "restaurant leads Toronto"]
+        )
+        graph.append({
+            "@type": "Dataset",
+            "name": name,
+            "description": desc,
+            "url": canonical,
+            "keywords": keywords,
+            "creator": {"@id": SITE + "/#organization"},
+            "spatialCoverage": {"@type": "Place", "name": "Toronto, Ontario, Canada"}
+        })
+
+    if path != "/":
+        label = {
+            "/teardown": "Toronto Building Permits",
+            "/openings": "Businesses Opening Soon",
+            "/pricing": "Pricing",
+            "/methodology": "Methodology",
+            "/terms": "Terms & Privacy",
+            "/about": "About First Dig",
+        }.get(path, title)
+        graph.append({
+            "@type": "BreadcrumbList",
+            "itemListElement": [
+                {"@type": "ListItem", "position": 1, "name": "First Dig", "item": SITE + "/"},
+                {"@type": "ListItem", "position": 2, "name": label, "item": canonical},
+            ],
+        })
+
+    if schema:
+        graph.append(schema)
+
+    tags = [
+        f'<link rel="canonical" href="{html_lib.escape(canonical, quote=True)}">',
+        f'<meta property="og:title" content="{html_lib.escape(title, quote=True)}">',
+        f'<meta property="og:description" content="{html_lib.escape(desc, quote=True)}">',
+        f'<meta property="og:url" content="{html_lib.escape(canonical, quote=True)}">',
+        '<meta name="twitter:card" content="summary">',
+        f'<meta name="twitter:title" content="{html_lib.escape(title, quote=True)}">',
+        f'<meta name="twitter:description" content="{html_lib.escape(desc, quote=True)}">',
+    ]
+    if graph:
+        tags.append('<script type="application/ld+json">' + json.dumps(
+            {"@context": "https://schema.org", "@graph": graph},
+            separators=(",", ":")
+        ) + '</script>')
+    return document.replace("</head>", "\n" + "\n".join(tags) + "\n</head>", 1)
 
 
 def rewrite_common(html: str, dashboard=False) -> str:
@@ -109,21 +199,41 @@ def main():
         ("/pricing", OUT / "pricing" / "index.html"),
         ("/methodology", OUT / "methodology" / "index.html"),
         ("/terms", OUT / "terms" / "index.html"),
+        ("/about", OUT / "about" / "index.html"),
     ]:
         r = client.get(route)
         r.raise_for_status()
-        write(dest, rewrite_common(r.text))
+        write(dest, seoify(rewrite_common(r.text), route))
 
     # Public dashboards. Write both historical /app/... paths and clean URLs.
     for product in ("teardown", "openings"):
         r = client.get(f"/app/{product}?days=90")
         r.raise_for_status()
         html = rewrite_common(r.text, dashboard=True)
-        write(OUT / product / "index.html", html)
-        write(OUT / "app" / product / "index.html", html)
+        clean = seoify(html, f"/{product}")
+        write(OUT / product / "index.html", clean)
+        duplicate = clean.replace(
+            '<meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1">',
+            '<meta name="robots" content="noindex,follow">'
+        )
+        write(OUT / "app" / product / "index.html", duplicate)
+
+    # Search discovery. Keep only canonical public pages in the sitemap.
+    today = dt.date.today().isoformat()
+    urls = ["/", "/teardown", "/openings", "/pricing", "/methodology", "/about", "/terms"]
+    sitemap = ['<?xml version="1.0" encoding="UTF-8"?>',
+               '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">']
+    for route in urls:
+        sitemap.append(
+            f'<url><loc>{SITE}{route}</loc><lastmod>{today}</lastmod></url>'
+        )
+    sitemap.append('</urlset>')
+    write(OUT / "sitemap.xml", "\n".join(sitemap) + "\n")
+    write(OUT / "robots.txt",
+          "User-agent: *\nAllow: /\nDisallow: /app/\nSitemap: https://firstdig.app/sitemap.xml\n")
 
     # Render static-site fallback: useful for direct links without extensions.
-    write(OUT / "404.html", rewrite_common(client.get("/").text))
+    write(OUT / "404.html", seoify(rewrite_common(client.get("/").text), "/"))
 
 
 if __name__ == "__main__":
