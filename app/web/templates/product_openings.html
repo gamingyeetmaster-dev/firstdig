@@ -1,6 +1,14 @@
 {% extends "base.html" %}
 {% set product = PRODUCTS.openings %}
-{% block title %}Toronto New Business & Restaurant Opening Leads | First Dig{% endblock %}
+{% block title %}Toronto New Business & Restaurant Opening Leads | First Dig
+<section class="alt"><div class="wrap prose">
+  <h2>How to find restaurants and businesses opening soon in Toronto</h2>
+  <p>New businesses often leave public signals before opening day: a City business licence, an interior fit-out permit, or an AGCO liquor-licence application. First Dig joins those records by address so sales teams can identify likely openings without manually checking several databases.</p>
+  <h3>Why opening-soon signals matter</h3>
+  <p>Many purchases happen before the doors open: payments, insurance, food and beverage supply, signage, printing, uniforms, cleaning, waste, telecom and other setup services. Earlier visibility gives vendors time to reach a business while those decisions are still being made.</p>
+</div></section>
+
+{% endblock %}
 {% block desc %}Toronto restaurants, bars, clinics and shops 60 to 120 days before they open, joined from liquor applications, business licences and fit-out permits.{% endblock %}
 {% block body %}
 {% set hero = items[0] if items else None %}
