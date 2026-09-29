@@ -160,6 +160,11 @@ def terms(c: Ctx = Depends(ctx)):
     return render(c, "terms.html")
 
 
+@app.get("/about", response_class=HTMLResponse)
+def about(c: Ctx = Depends(ctx)):
+    return render(c, "about.html")
+
+
 # ---------- dashboards ----------
 
 @app.get("/app/teardown", response_class=HTMLResponse)
