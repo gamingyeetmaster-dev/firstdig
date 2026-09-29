@@ -1,6 +1,16 @@
 {% extends "base.html" %}
 {% set product = PRODUCTS.teardown %}
-{% block title %}Toronto Building Permits & Construction Leads | First Dig{% endblock %}
+{% block title %}Toronto Building Permits & Construction Leads | First Dig
+<section class="alt"><div class="wrap prose">
+  <h2>How to find Toronto building permits and early construction leads</h2>
+  <p>The City of Toronto publishes active building-permit records, but a single construction project can appear as several separate rows for demolition, plumbing, HVAC, drains and revisions. First Dig groups those filings into one project per address so contractors can search the signal instead of manually sorting the raw permit file.</p>
+  <h3>What can a Toronto building permit tell you?</h3>
+  <p>A permit can reveal the address, application timing, project description, stage, declared construction value and—in some filings—the applicant-stated builder. Those fields can help identify a teardown, new custom home, multiplex, garden suite or major addition before the downstream work is awarded.</p>
+  <h3>Who uses construction-permit leads?</h3>
+  <p>Pool builders, landscapers, fence and railing contractors, window and door companies, millwork shops, home-automation firms, movers, trades and other businesses can use permit timing to focus prospecting on properties where substantial work is actually planned.</p>
+</div></section>
+
+{% endblock %}
 {% block desc %}Every teardown, new house, multiplex, garden suite and major addition filed with Toronto Building, mapped and emailed daily.{% endblock %}
 {% block body %}
 {% set hero = items[0] if items else None %}
