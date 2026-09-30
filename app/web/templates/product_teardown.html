@@ -26,7 +26,7 @@
     </div>
 
     <h1 class="track-headline">{{ product.tagline }}</h1>
-    <p class="track-lede">Toronto Building publishes every permit application. We roll the plumbing, HVAC, drain and demolition rows up into one project per address, classify it, geocode it, attach the builder, and put it on your map the next morning &mdash; like the one below, filed {{ hero.first_filed | nice_date }}.</p>
+    <p class="track-lede">Toronto Building publishes every permit application. We roll the plumbing, HVAC, drain and demolition rows up into one project per address, classify it, geocode it, retain builder information when the source includes it, and organize the result in one project view &mdash; like the one below, filed {{ hero.first_filed | nice_date }}.</p>
 
     <div class="status-rail">
       {% for stage_key, stage_label in STAGE_LABELS.items() %}
@@ -49,7 +49,7 @@
     <div class="track-cta">
       <a class="btn primary" href="/login?next=/app/teardown">Start a {{ TRIAL_DAYS }}-day free trial</a>
       <a class="btn" href="/app/teardown">Browse the delayed public feed</a>
-      <span class="muted small" style="align-self:center">${{ product.price_monthly }}/month after the trial. Cancel anytime.</span>
+      <span class="muted small" style="align-self:center">Early access is currently by request.</span>
     </div>
   </article>
   {% endif %}
@@ -83,12 +83,12 @@
 <section class="alt"><div class="wrap">
   <div class="sec-h"><h2>Who uses it, and how</h2></div>
   <div class="differentiators">
-    <div class="differentiator"><b>Pool and landscape</b><p>A teardown filed today has a bare yard in ten months. Send a letter to the owner and the builder while the drawings are still open.</p></div>
-    <div class="differentiator"><b>Fence, railing, deck</b><p>Filter to &ldquo;Teardown&rdquo;, &ldquo;New house&rdquo; and &ldquo;Major addition&rdquo; in your service area. The permit lists the declared value so you can size the job.</p></div>
-    <div class="differentiator"><b>Windows, doors, millwork, closets</b><p>Builders spec these 3 to 6 months after issuance. The feed shows stage: Applied, Issued, Under construction.</p></div>
-    <div class="differentiator"><b>Realtors and lenders</b><p>Multiplex and garden-suite filings are future listings and refinances. See them by neighbourhood before the sign goes up.</p></div>
-    <div class="differentiator"><b>Trades looking for GCs</b><p>The builder name is on the permit. Fifty builders file most of the teardowns in the city. Now you know which ones are busy this month.</p></div>
-    <div class="differentiator"><b>Movers and storage</b><p>A major addition or underpinning means a family moving out for six months. That is a moving job and a storage unit.</p></div>
+    <div class="differentiator"><b>Pool and landscape</b><p>A teardown or new-house filing can mark the start of a long project sequence. Use the stage to research adjacent work that may still be unassigned; verify the recipient before outreach.</p></div>
+    <div class="differentiator"><b>Fence, railing, deck</b><p>Filter to &ldquo;Teardown&rdquo;, &ldquo;New house&rdquo; and &ldquo;Major addition&rdquo; in your service area. Use project type, stage and applicant-declared value where it is present and usable; treat value as context, not a quote.</p></div>
+    <div class="differentiator"><b>Windows, doors, millwork, closets</b><p>Stage helps separate newly applied work from issued or under-construction projects, so outreach can be timed to the part of the workflow that matters for your trade.</p></div>
+    <div class="differentiator"><b>Realtors and lenders</b><p>Multiplex and garden-suite filings can be useful research signals for neighbourhood change, development activity and future financing conversations.</p></div>
+    <div class="differentiator"><b>Trades looking for GCs</b><p>Some permit records include an applicant-stated builder. Where present, that field can support contractor and territory research; many records have no builder name.</p></div>
+    <div class="differentiator"><b>Movers and storage</b><p>Major additions and underpinning flag disruptive residential work that can create adjacent moving or storage needs. Treat that as a hypothesis to verify, not a guaranteed job.</p></div>
   </div>
 </div></section>
 
@@ -97,6 +97,6 @@
   <ul>
     {% for k, label in kinds %}<li><b>{{ label }}</b>{% if k == 'teardown' %} — a demolition folder plus a new-house permit at one address, or a new-house permit whose description says demolish.{% elif k == 'new_house' %} — a New Houses permit with no demolition on file (often an empty or severed lot).{% elif k == 'multiplex' %} — two or more dwelling units created, or duplex / triplex / fourplex in the description.{% elif k == 'garden_suite' %} — laneway or garden suite permits.{% elif k == 'major_addition' %} — additions and multi-project renovations with declared cost of $150k or more.{% elif k == 'pool' %} — any permit whose description mentions a pool.{% elif k == 'underpinning' %} — basement lowering and underpinning.{% elif k == 'second_suite' %} — new basement apartments and second units.{% elif k == 'new_building' %} — non-house new buildings over $1M (mid-rise, mixed use).{% endif %}</li>{% endfor %}
   </ul>
-  <p class="muted small">Estimated construction cost is the applicant's declared value on the permit. It is often understated; treat it as a floor.</p>
+  <p class="muted small">Estimated construction cost is applicant-reported and can be missing, messy or non-comparable. Use it as rough context only.</p>
 </div></section>
 {% endblock %}
