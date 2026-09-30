@@ -38,11 +38,11 @@ usable feeds.
 
 **Contrast:** not a shared lead list, not scraped personal-data enrichment, not a marketplace.
 
-**Products:**
-- Teardown Feed — $79/month.
-- Opening Soon — $99/month.
-- Bundle — $149/month.
-- 14-day trial, no card.
+**Commercial model:**
+- Teardown Feed — $79/month planned pricing.
+- Opening Soon — $99/month planned pricing.
+- Bundle — $149/month planned pricing.
+- Public acquisition is currently **early access**, not a self-serve trial. Do not advertise a 14-day trial until persistent account/billing access is actually exposed.
 
 Never invent customers, testimonials, conversion rates, download counts, "exclusive" leads,
 partnerships or demand. A filing proves that a filing exists; it does not prove that its subject
@@ -72,7 +72,7 @@ Recommended profile:
 - Bio:
   `Toronto filings before the obvious buying moment.`
   `Teardowns + opening-soon signals.`
-  `↓ 14-day free trial`
+  `↓ Request early access`
 - Link: `https://firstdig.app`
 
 ### Content pillars
@@ -99,7 +99,7 @@ unrelated trend-jacking.
 ## Launch sequence
 
 ### Post 1 — brand thesis
-Carousel: "The lead before it becomes a lead."
+Carousel: "The lead before it becomes a lead." (CTA: request early access.)
 Purpose: explain the category and create a credible profile landing surface.
 
 ### Post 2 — real Teardown proof
@@ -196,7 +196,7 @@ Subject: `[specific Toronto filing] — may be early for [their service]`
 
 `It reads the primary filings each morning and puts the useful ones into a map/feed rather than selling a shared lead list.`
 
-`If this is useful for [company], I can send you the relevant sample. There is also a 14-day trial with no card.`
+`If this is useful for [company], I can send you the relevant sample or early-access link.`
 
 `— Jackson, First Dig`
 `[business mailing address]`
