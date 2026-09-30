@@ -4,14 +4,14 @@
 {% block body %}
 <section><div class="wrap">
   <h1 style="font-size:40px">Simple monthly plans</h1>
-  <p class="muted" style="max-width:60ch">Every plan starts with a {{ TRIAL_DAYS }}-day free trial of both feeds. Prices are in Canadian dollars, plus HST. Cancel from your account in one click.</p>
-  {% if request.query_params.get('billing') == 'off' %}<div class="notice">Card billing isn't switched on yet. Your trial keeps working; email us and we'll set you up manually.</div>{% endif %}
+  <p class="muted" style="max-width:60ch">Self-serve billing is not live yet. The prices below are planned monthly pricing in Canadian dollars; current access is by request while we validate the product with early users.</p>
+  {% if request.query_params.get('billing') == 'off' %}<div class="notice">Card billing isn't switched on yet. Request early access and we'll handle onboarding directly.</div>{% endif %}
   {% if request.query_params.get('error') %}<div class="notice err">Checkout failed ({{ request.query_params.get('error') }}). Try again or email us.</div>{% endif %}
   <div class="plans">
     <div class="plan" data-product="teardown">
       <span class="pill td">Teardown Feed</span>
       <div class="price">${{ PRODUCTS.teardown.price_monthly }}<small>/month</small></div>
-      <ul><li>Every residential project the morning after filing</li><li>Builder names and permit numbers</li><li>Map, 158 neighbourhood filters, stage and cost filters</li><li>Daily email digest for your neighbourhoods</li><li>Unlimited CSV export</li></ul>
+      <ul><li>Fresh residential project filings organized by address and stage</li><li>Permit numbers and builder information where the source provides it</li><li>Map, 158 neighbourhood filters, stage and cost filters</li><li>Source-verifiable project detail and filtering workflow</li><li>Unlimited CSV export</li></ul>
       {% if user %}<form method="post" action="/billing/checkout/teardown"><button class="btn primary" style="width:100%">Subscribe</button></form>{% else %}<a class="btn primary" href="/login?next=/pricing">Start free trial</a>{% endif %}
     </div>
     <div class="plan best">
@@ -23,16 +23,16 @@
     <div class="plan" data-product="openings">
       <span class="pill op">Opening Soon</span>
       <div class="price">${{ PRODUCTS.openings.price_monthly }}<small>/month</small></div>
-      <ul><li>Liquor, licence and fit-out permit signals joined by address</li><li>Names, street numbers, phone where filed, applicant</li><li>Category, neighbourhood and signal-count filters</li><li>Daily email digest</li><li>Unlimited CSV export</li></ul>
+      <ul><li>Liquor, licence and fit-out permit signals joined by address</li><li>Names, street numbers, phone where filed, applicant</li><li>Category, neighbourhood and signal-count filters</li><li>Source-verifiable signal timeline</li><li>Unlimited CSV export</li></ul>
       {% if user %}<form method="post" action="/billing/checkout/openings"><button class="btn primary" style="width:100%">Subscribe</button></form>{% else %}<a class="btn primary" href="/login?next=/pricing">Start free trial</a>{% endif %}
     </div>
   </div>
   <div class="prose" style="margin-top:36px">
     <h3>Questions people ask</h3>
-    <p><b>Is this legal?</b> Yes. Everything comes from City of Toronto Open Data (Open Government Licence) and the AGCO's public notice file. We publish the applicant's name, business name and phone only where the applicant put it on a public licence. We do not append personal data from other sources.</p>
-    <p><b>How fresh is it?</b> The City refreshes its permit and licence files daily; we pull them every morning. A permit filed on Monday is in Tuesday's digest.</p>
+    <p><b>Where does the data come from?</b> City of Toronto Open Data and the AGCO public-notice file. First Dig organizes those records and does not append private contact data. Customers remain responsible for using the data and conducting outreach in compliance with applicable law.</p>
+    <p><b>How fresh is it?</b> First Dig refreshes its source datasets daily. A record appears after the relevant public source publishes it and the next First Dig refresh completes.</p>
     <p><b>Do you sell leads more than once?</b> This isn't a lead marketplace. It's the public record, organised. Every subscriber sees the same filings; what you do with them first is up to you.</p>
-    <p><b>Team seats?</b> Email us. Multi-seat and API access are priced per case.</p>
+    <p><b>Team access?</b> Request early access and tell us how your team would use the data. We are validating the workflow before opening self-serve team plans.</p>
   </div>
 </div></section>
 {% endblock %}
