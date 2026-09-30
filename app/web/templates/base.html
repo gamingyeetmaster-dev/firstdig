@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>{% block title %}First Dig | Toronto Construction Leads & Permit Intelligence{% endblock %}</title>
-<meta name="description" content="{% block desc %}First Dig turns Toronto building permits and public business filings into searchable construction and opening-soon leads for contractors and local sales teams.{% endblock %}">
+<title>{% block title %}First Dig | Toronto Project & Opening Intelligence{% endblock %}</title>
+<meta name="description" content="{% block desc %}First Dig organizes Toronto building permits and public business filings into source-verifiable project and pre-opening signals.{% endblock %}">
 <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1">
 <meta property="og:site_name" content="First Dig">
 <meta property="og:type" content="website">
@@ -36,8 +36,8 @@
 </div></nav>
 {% block body %}{% endblock %}
 <footer><div class="wrap">
-  <div>First Dig · Built from City of Toronto Open Data and AGCO public notices · {% if last_run %}Last refresh {{ last_run[:16].replace('T',' ') }} UTC{% endif %}</div>
-  <div><a href="/about">About</a> · <a href="/methodology">Methodology</a> · <a href="/terms">Terms &amp; privacy</a> · <a href="mailto:hello@example.com">Contact</a></div>
+  <div>First Dig · Contains information licensed under the <a href="https://open.toronto.ca/open-data-licence/" rel="noopener">Open Government Licence – Toronto</a> and <a href="https://www.ontario.ca/page/open-government-licence-ontario" rel="noopener">Open Government Licence – Ontario</a> · {% if last_run %}Last refresh {{ last_run[:16].replace('T',' ') }} UTC{% endif %}</div>
+  <div>Independent project; no City or AGCO endorsement implied. · <a href="/about">About</a> · <a href="/methodology">Methodology</a> · <a href="/terms">Terms &amp; privacy</a> · <a href="mailto:jackson@firstdig.app">Contact</a></div>
 </div></footer>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script src="/static/app.js?v=2"></script>
