@@ -1,6 +1,6 @@
 {% extends "base.html" %}
-{% block title %}First Dig | Toronto Construction Leads & Permit Intelligence{% endblock %}
-{% block desc %}Find Toronto construction leads, building permits, teardowns, new houses, major additions and businesses opening soon from daily public filings.{% endblock %}
+{% block title %}First Dig | Toronto Project & Opening Intelligence{% endblock %}
+{% block desc %}Follow Toronto residential projects and pre-opening business signals from daily public filings, organized by address, stage and source.{% endblock %}
 {% block body %}
 {% set hero = sample_t[0] if sample_t else None %}
 {% set stage_keys = STAGE_LABELS.keys() | list %}
@@ -15,7 +15,7 @@
     </div>
 
     <h1 class="track-headline">{{ hero.headline.split(' · est.')[0] }}</h1>
-    <p class="track-lede">{{ hero.address }} &middot; {{ hero.neighbourhood }}. First Dig subscribers had this the same morning it was filed &mdash; builder's name included.</p>
+    <p class="track-lede">{{ hero.address }} &middot; {{ hero.neighbourhood }}. First Dig organizes the filing by address and stage so the next relevant vendor decision is easier to reason about. Builder information is shown only when the source filing contains it.</p>
 
     <div class="status-rail">
       {% for stage_key, stage_label in STAGE_LABELS.items() %}
@@ -57,7 +57,7 @@
   <article class="track" data-product="teardown">
     <div class="track-kicker"><span class="pill td">Teardown Feed</span></div>
     <h2>{{ PRODUCTS.teardown.tagline }}</h2>
-    <p class="muted small" style="margin-top:8px">For pool builders, landscapers, fence and railing companies, window and door dealers, custom millwork, home automation and movers &mdash; anyone who needs to be the first call when a rebuild is filed.</p>
+    <p class="muted small" style="margin-top:8px">For pool builders, landscapers, fence and railing companies, window and door dealers, custom millwork, home automation and movers &mdash; teams whose work is often downstream of a rebuild and who need to understand project stage before prospecting.</p>
     <div class="track-sample"><div class="tbl"><table>
       <thead><tr><th>Filed</th><th>Address</th><th>Project</th><th>Stage</th></tr></thead>
       <tbody>{% for p in sample_t %}<tr>
@@ -67,14 +67,14 @@
         <td><span class="stage-cell"><span class="stage-glyph {{ 'done' if p.stage == 'completed' else 'current' }}"></span><span class="lbl muted">{{ p.stage_label }}</span></span></td>
       </tr>{% endfor %}</tbody>
     </table></div></div>
-    <p class="small muted" style="margin-top:10px">Public sample delayed {{ FREE_DELAY_DAYS }} days. Subscribers see filings the morning they land, with the builder's name.</p>
+    <p class="small muted" style="margin-top:10px">Public sample delayed {{ FREE_DELAY_DAYS }} days. Early access exposes fresher records; builder information appears only when present in the source.</p>
     <a class="btn primary" href="/teardown">Explore the Teardown Feed</a>
   </article>
 
   <article class="track" data-product="openings">
     <div class="track-kicker"><span class="pill op">Opening Soon</span></div>
     <h2>{{ PRODUCTS.openings.tagline }}</h2>
-    <p class="muted small" style="margin-top:8px">For POS and payments reps, insurance brokers, distributors, commercial cleaners, signage shops and linen services &mdash; anyone who sells to a new business in its first 90 days.</p>
+    <p class="muted small" style="margin-top:8px">For POS and payments reps, insurance brokers, distributors, commercial cleaners, signage shops and linen services &mdash; vendors whose buying window can happen before a business opens.</p>
     <div class="track-sample"><div class="tbl"><table>
       <thead><tr><th>Latest</th><th>Business</th><th>Signals</th></tr></thead>
       <tbody>{% for o in sample_o %}<tr>
@@ -83,19 +83,19 @@
         <td><span class="pill op">{{ o.signal_count }}</span> {{ o.signal_types | join(' + ') }}</td>
       </tr>{% endfor %}</tbody>
     </table></div></div>
-    <p class="small muted" style="margin-top:10px">Public sample hides names and street numbers. Subscribers get the name, address, phone where filed, and the applicant.</p>
+    <p class="small muted" style="margin-top:10px">Public sample hides names and street numbers. Early-access records preserve business/contact fields only when the underlying public filing contains them.</p>
     <a class="btn primary" href="/openings">Explore Opening Soon</a>
   </article>
 
 </div></section>
 
 <section class="alt"><div class="wrap">
-  <div class="sec-h"><h2>Why this beats lead-gen sites</h2></div>
+  <div class="sec-h"><h2>What First Dig adds to the public record</h2></div>
   <div class="differentiators">
-    <div class="differentiator"><b>It's the primary record</b><p>We read the same permit and licence files the city publishes, every day. No form-fills, no shared leads, no &ldquo;exclusive&rdquo; leads sold four times.</p></div>
-    <div class="differentiator"><b>Timing you can't buy</b><p>A permit application lands 60 to 120 days before construction, and 90 to 180 days before the owner needs a pool, a fence or a sign. That's the window.</p></div>
-    <div class="differentiator"><b>Joined, not dumped</b><p>Opening Soon stacks three independent filings by address. Two or more signals at one address is a business that's definitely opening &mdash; not a rumour.</p></div>
-    <div class="differentiator"><b>Filter to your patch</b><p>158 city neighbourhoods, project type, stage, declared cost, category. Save a filter, get only your patch by email, export to CSV for your CRM.</p></div>
+    <div class="differentiator"><b>Source trail first</b><p>We organize City and AGCO public records while keeping the underlying filing types visible. A filing is evidence of activity, not a promise that a prospect wants to be contacted.</p></div>
+    <div class="differentiator"><b>Stage, not just a row</b><p>Project and opening stages can help a vendor decide whether a downstream buying decision may still be ahead. The useful question is what comes next, not simply whether a filing exists.</p></div>
+    <div class="differentiator"><b>Joined, not dumped</b><p>Opening Soon stacks three independent filings by address. Multiple independent signals at one address can make an opening hypothesis stronger, while the source trail stays visible for verification.</p></div>
+    <div class="differentiator"><b>Filter to your patch</b><p>158 city neighbourhoods, project type, stage, declared cost, category. Filter by area, stage, project type, cost and category, then work the records in the map/feed workflow.</p></div>
   </div>
 </div></section>
 {% endblock %}
