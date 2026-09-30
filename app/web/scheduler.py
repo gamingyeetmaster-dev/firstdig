@@ -33,6 +33,7 @@ def _job():
     con = connect()
     try:
         digest.send_all(con, emailer.send, log=log.info)
+        marketing_brief.send(con, emailer.send, log_fn=log.info)
         con.commit()
     except Exception:
         log.exception("digests failed")
