@@ -128,7 +128,7 @@ def seoify(document: str, path: str, schema=None) -> str:
 def rewrite_common(html: str, dashboard=False) -> str:
     # Public browse stays entirely on the static origin. Authentication is not
     # exposed until persistent account storage is production-ready.
-    access = "mailto:jacksonjameslang@gmail.com?subject=First%20Dig%20early%20access"
+    access = "mailto:jackson@firstdig.app?subject=First%20Dig%20early%20access"
     html = html.replace('href="/app/teardown"', 'href="/teardown"')
     html = html.replace('href="/app/openings"', 'href="/openings"')
     html = re.sub(r'href="/login(?:\\?[^"]*)?"', f'href="{access}"', html)
@@ -137,7 +137,7 @@ def rewrite_common(html: str, dashboard=False) -> str:
     html = html.replace('>Start free trial<', '>Request early access<')
     html = html.replace('>Sign in<', '>Request access<')
     html = html.replace('>Subscribe to see today\'s filings<', '>Request access to current filings<')
-    html = html.replace('href="mailto:hello@example.com"', 'href="mailto:jacksonjameslang@gmail.com?subject=First%20Dig"')
+    html = html.replace('href="mailto:hello@example.com"', 'href="mailto:jackson@firstdig.app?subject=First%20Dig"')
     # Prevent redacted public record links from falling through to the sleeping
     # dynamic backend. The public dashboard itself carries the usable signal.
     html = re.sub(r'href="/p/[^"]+"', 'href="/teardown"', html)
