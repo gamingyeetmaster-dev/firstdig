@@ -24,7 +24,7 @@ def _now():
 def _job():
     from ..db import connect
     from ..pipeline.run import run
-    from . import digest, emailer
+    from . import digest, emailer, marketing_brief
     try:
         run(log=log.info)
     except Exception:
