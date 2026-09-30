@@ -128,9 +128,22 @@ def seoify(document: str, path: str, schema=None) -> str:
 def rewrite_common(html: str, dashboard=False) -> str:
     # Public browse stays entirely on the static origin. Authentication is not
     # exposed until persistent account storage is production-ready.
-    access = "mailto:jackson@firstdig.app?subject=First%20Dig%20early%20access"
+    access = (
+        "mailto:jackson@firstdig.app?subject=First%20Dig%20early%20access"
+        "&body=Company%3A%0ARole%3A%0AWhat%20would%20you%20want%20First%20Dig%20to%20surface%3F%3A%0A"
+    )
+    teardown_access = (
+        "mailto:jackson@firstdig.app?subject=First%20Dig%20Teardown%20Feed%20early%20access"
+        "&body=Company%3A%0ARole%3A%0AService%20area%20or%20project%20type%3A%0A"
+    )
+    openings_access = (
+        "mailto:jackson@firstdig.app?subject=First%20Dig%20Opening%20Soon%20early%20access"
+        "&body=Company%3A%0ARole%3A%0AWhich%20new-business%20customers%20do%20you%20sell%20to%3F%3A%0A"
+    )
     html = html.replace('href="/app/teardown"', 'href="/teardown"')
     html = html.replace('href="/app/openings"', 'href="/openings"')
+    html = html.replace('href="/login?next=/app/teardown"', f'href="{teardown_access}"')
+    html = html.replace('href="/login?next=/app/openings"', f'href="{openings_access}"')
     html = re.sub(r'href="/login(?:\\?[^"]*)?"', f'href="{access}"', html)
     html = html.replace('href="/account"', f'href="{access}"')
     html = html.replace('action="/logout"', f'action="{access}"')
