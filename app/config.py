@@ -22,7 +22,7 @@ ADMIN_EMAILS = {e.strip().lower() for e in os.getenv("ADMIN_EMAILS", "").split("
 # Email (Resend). When unset, emails are printed to the log and, in DEV_MODE,
 # magic links are shown on screen.
 RESEND_API_KEY = os.getenv("RESEND_API_KEY", "")
-EMAIL_FROM = os.getenv("EMAIL_FROM", "First Dig <hello@example.com>")
+EMAIL_FROM = os.getenv("EMAIL_FROM", "First Dig <jackson@firstdig.app>")
 # Optional internal recipient for a post-refresh proof brief. This is not a marketing list.
 MARKETING_BRIEF_TO = os.getenv("MARKETING_BRIEF_TO", "").strip()
 
@@ -50,7 +50,7 @@ PRODUCTS = {
     "openings": {
         "slug": "openings",
         "name": "Opening Soon",
-        "tagline": "Restaurants, bars, clinics and shops 60 to 120 days before they open, from three public filings joined together.",
+        "tagline": "Restaurants, bars, clinics and shops surfaced from public licence and fit-out filings joined by address.",
         "price_monthly": 99,
         "price_env": "STRIPE_PRICE_OPENINGS",
     },
