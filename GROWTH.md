@@ -15,7 +15,7 @@ specific proof ("this happened before the obvious buying moment")
       ↓
 qualified visitor
       ↓
-sample / early-access request
+sample / trial start
       ↓
 trial activation
       ↓
@@ -42,7 +42,7 @@ usable feeds.
 - Teardown Feed — $79/month planned pricing.
 - Opening Soon — $99/month planned pricing.
 - Bundle — $149/month planned pricing.
-- Public acquisition is currently **early access**, not a self-serve trial. Do not advertise a 14-day trial until persistent account/billing access is actually exposed.
+- Public acquisition currently exposes a **14-day self-serve trial** through passwordless email login. The trial itself is real and does not require a card. Do not imply paid conversion is available unless live billing is verified.
 
 Never invent customers, testimonials, conversion rates, download counts, "exclusive" leads,
 partnerships or demand. A filing proves that a filing exists; it does not prove that its subject
@@ -72,7 +72,7 @@ Recommended profile:
 - Bio:
   `Toronto filings before the obvious buying moment.`
   `Teardowns + opening-soon signals.`
-  `↓ Request early access`
+  `↓ Start the 14-day trial`
 - Link: `https://firstdig.app`
 
 ### Content pillars
@@ -99,7 +99,7 @@ unrelated trend-jacking.
 ## Launch sequence
 
 ### Post 1 — brand thesis
-Carousel: "The lead before it becomes a lead." (CTA: request early access.)
+Carousel: "The lead before it becomes a lead." (CTA: start the 14-day trial.)
 Purpose: explain the category and create a credible profile landing surface.
 
 ### Post 2 — real Teardown proof
@@ -132,7 +132,7 @@ Do not optimize for follower count alone. Useful early signals:
 - website taps,
 - saves/shares on real-signal posts,
 - replies/DMs from target businesses,
-- trial or early-access requests,
+- trial starts,
 - whether trial users return to the digest/feed.
 
 ## Outbound: primary early acquisition channel
@@ -196,7 +196,7 @@ Subject: `[specific Toronto filing] — may be early for [their service]`
 
 `It reads the primary filings each morning and puts the useful ones into a map/feed rather than selling a shared lead list.`
 
-`If this is useful for [company], I can send you the relevant sample or early-access link.`
+`If this is useful for [company], I can send you the relevant sample or trial link.`
 
 `— Jackson, First Dig`
 `[business mailing address]`
