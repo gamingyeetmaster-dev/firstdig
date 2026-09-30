@@ -41,14 +41,14 @@ PRODUCTS = {
     "teardown": {
         "slug": "teardown",
         "name": "Teardown Feed",
-        "tagline": "Every new house, demolition, multiplex and major addition filed in Toronto, the day it lands.",
+        "tagline": "Toronto residential project filings, grouped by address and stage so you can reason about what work comes next.",
         "price_monthly": 79,
         "price_env": "STRIPE_PRICE_TEARDOWN",
     },
     "openings": {
         "slug": "openings",
         "name": "Opening Soon",
-        "tagline": "Restaurants, bars, clinics and shops 60 to 120 days before they open, from three public filings joined together.",
+        "tagline": "Pre-opening signals for restaurants, bars, clinics and shops, joined across public filings by address.",
         "price_monthly": 99,
         "price_env": "STRIPE_PRICE_OPENINGS",
     },
