@@ -13,7 +13,7 @@ from fastapi.templating import Jinja2Templates
 
 from .. import config
 from ..db import connect, get_meta, init_db
-from . import auth, billing, digest, emailer, queries, scheduler
+from . import auth, billing, digest, emailer, inbound, queries, scheduler
 from .hardening import Hardening
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(name)s %(levelname)s %(message)s")
@@ -356,6 +356,23 @@ async def webhook(request: Request):
     finally:
         con.close()
     return {"received": t}
+
+
+# ---------- inbound email ----------
+
+@app.post("/webhooks/resend")
+async def resend_inbound_webhook(request: Request):
+    payload = await request.body()
+    try:
+        event = inbound.verify_event(payload, request.headers)
+        result = inbound.forward_received(event)
+    except inbound.InboundError as e:
+        log.exception("Resend inbound webhook failed")
+        return JSONResponse({"error": str(e)}, status_code=400 if "webhook" in str(e).lower() else 502)
+    except Exception:
+        log.exception("Resend inbound webhook failed")
+        return JSONResponse({"error": "inbound processing failed"}, status_code=502)
+    return JSONResponse(result)
 
 
 # ---------- ops ----------
