@@ -28,7 +28,16 @@ def _rows(con, limit=5):
         SELECT address, neighbourhood, kind, stage, first_filed, est_cost, units_created
         FROM projects
         WHERE first_filed IS NOT NULL
-        ORDER BY first_filed DESC, last_activity DESC
+          AND kind IN ('teardown','new_house','multiplex','major_addition','garden_suite')
+        ORDER BY first_filed DESC,
+                 CASE kind
+                   WHEN 'teardown' THEN 1
+                   WHEN 'new_house' THEN 2
+                   WHEN 'multiplex' THEN 3
+                   WHEN 'major_addition' THEN 4
+                   ELSE 5
+                 END,
+                 last_activity DESC
         LIMIT ?
         """,
         (limit,),
@@ -39,6 +48,7 @@ def _rows(con, limit=5):
                signal_count, est_cost
         FROM openings
         WHERE last_signal IS NOT NULL
+          AND signal_count >= 2
         ORDER BY last_signal DESC, signal_count DESC
         LIMIT ?
         """,
@@ -59,7 +69,7 @@ def render(con, limit=5):
         "Use these records as leads for verification and product-proof ideas only.",
         "Do not imply customer status, consent, endorsement, or demand.",
         "",
-        "TEARDOWN FEED — freshest records",
+        "TEARDOWN FEED — freshest high-value project stages",
     ]
     project_html = []
     for r in projects:
@@ -80,7 +90,7 @@ def render(con, limit=5):
             "</tr>"
         )
 
-    text_lines += ["", "OPENING SOON — freshest records"]
+    text_lines += ["", "OPENING SOON — freshest multi-signal records"]
     opening_html = []
     for r in openings:
         label = r["name"] or r["category"] or "Unnamed filing"
@@ -137,9 +147,9 @@ def render(con, limit=5):
         Real primary-record data for verification, product proof and targeted research.
         A filing is <strong>not</strong> a customer, endorsement, consent signal or proof of demand.
       </p>
-      <h2 style="font-size:20px;margin-top:28px">Teardown Feed — freshest records</h2>
+      <h2 style="font-size:20px;margin-top:28px">Teardown Feed — freshest high-value project stages</h2>
       {table_project}
-      <h2 style="font-size:20px;margin-top:28px">Opening Soon — freshest records</h2>
+      <h2 style="font-size:20px;margin-top:28px">Opening Soon — freshest multi-signal records</h2>
       {table_opening}
       <h2 style="font-size:20px;margin-top:28px">Editorial gate</h2>
       <p>Before publishing a record, verify freshness and avoid personal contact details.
