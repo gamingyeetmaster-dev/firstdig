@@ -5,6 +5,7 @@ import secrets
 from itsdangerous import BadSignature, URLSafeSerializer
 
 from ..config import ADMIN_EMAILS, SECRET_KEY, TRIAL_DAYS
+from . import auth_store
 
 COOKIE = "fd_session"
 _signer = URLSafeSerializer(SECRET_KEY, salt="session")
@@ -18,24 +19,14 @@ def create_magic_link(con, email):
     email = email.strip().lower()
     token = secrets.token_urlsafe(32)
     expires = (now() + dt.timedelta(minutes=30)).isoformat()
-    con.execute("INSERT INTO magic_links(token,email,expires) VALUES (?,?,?)", (token, email, expires))
+    auth_store.create_magic_link(con, token, email, expires)
     return token
 
 
 def consume_magic_link(con, token):
-    row = con.execute("SELECT * FROM magic_links WHERE token=? AND used=0", (token,)).fetchone()
-    if not row or row["expires"] < now().isoformat():
-        return None
-    con.execute("UPDATE magic_links SET used=1 WHERE token=?", (token,))
-    email = row["email"]
-    user = con.execute("SELECT * FROM users WHERE email=?", (email,)).fetchone()
     ts = now().isoformat()
-    if not user:
-        trial_ends = (now() + dt.timedelta(days=TRIAL_DAYS)).date().isoformat()
-        con.execute("INSERT INTO users(email,created,last_login,trial_ends) VALUES (?,?,?,?)", (email, ts, ts, trial_ends))
-    else:
-        con.execute("UPDATE users SET last_login=? WHERE id=?", (ts, user["id"]))
-    return con.execute("SELECT * FROM users WHERE email=?", (email,)).fetchone()
+    trial_ends = (now() + dt.timedelta(days=TRIAL_DAYS)).date().isoformat()
+    return auth_store.consume_magic_link(con, token, ts, trial_ends)
 
 
 def session_cookie_value(user_id):
@@ -49,7 +40,7 @@ def user_from_cookie(con, value):
         data = _signer.loads(value)
     except BadSignature:
         return None
-    return con.execute("SELECT * FROM users WHERE id=?", (data.get("uid"),)).fetchone()
+    return auth_store.user_by_id(con, data.get("uid"))
 
 
 # ---------- entitlements ----------

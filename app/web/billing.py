@@ -4,6 +4,7 @@ import logging
 
 from ..config import (BASE_URL, STRIPE_PRICE_BUNDLE, STRIPE_PRICE_OPENINGS, STRIPE_PRICE_TEARDOWN,
                       STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET)
+from . import auth_store
 
 log = logging.getLogger("billing")
 
@@ -29,7 +30,7 @@ def checkout_url(con, user, plan):
     if not customer_id:
         c = stripe.Customer.create(email=user["email"], metadata={"user_id": user["id"]})
         customer_id = c["id"]
-        con.execute("UPDATE users SET stripe_customer_id=? WHERE id=?", (customer_id, user["id"]))
+        auth_store.set_stripe_customer(con, user["id"], customer_id)
     s = stripe.checkout.Session.create(
         mode="subscription",
         customer=customer_id,
@@ -61,11 +62,11 @@ def handle_webhook(con, payload, sig_header):
         if not plan:
             price = obj["items"]["data"][0]["price"]["id"]
             plan = next((k for k, v in PRICES.items() if v == price), None)
-        con.execute("UPDATE users SET plan=?, plan_status=? WHERE stripe_customer_id=?", (plan, status, customer))
+        auth_store.set_subscription_by_customer(con, customer, plan, status)
         log.info("subscription %s -> %s/%s for %s", t, plan, status, customer)
     elif t == "checkout.session.completed":
         customer = obj.get("customer")
         uid = (obj.get("metadata") or {}).get("user_id")
         if customer and uid:
-            con.execute("UPDATE users SET stripe_customer_id=? WHERE id=?", (customer, uid))
+            auth_store.set_stripe_customer(con, uid, customer)
     return t
