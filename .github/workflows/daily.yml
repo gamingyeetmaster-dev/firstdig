@@ -1,13 +1,16 @@
-# Optional external cron if you'd rather not run the in-process scheduler.
-# Set repository secrets SITE_URL and CRON_SECRET, then set ENABLE_SCHEDULER=0 on the host.
+# Zero-cost wake-up for the in-process Toronto scheduler.
+# Render free services can sleep; these two UTC wake times bracket 06:00 Toronto
+# across daylight/standard time. Only the wake that lands in the configured
+# 06:00 local hour can trigger the scheduler.
 name: daily refresh
 on:
   schedule:
-    - cron: "15 10 * * *"   # 06:15 Toronto (EDT)
+    - cron: "5 10 * * *"   # 06:05 EDT / 05:05 EST
+    - cron: "5 11 * * *"   # 07:05 EDT / 06:05 EST
   workflow_dispatch:
 jobs:
-  refresh:
+  wake:
     runs-on: ubuntu-latest
     steps:
-      - run: curl -fsS --max-time 900 "${{ secrets.SITE_URL }}/tasks/refresh?key=${{ secrets.CRON_SECRET }}"
-      - run: curl -fsS --max-time 300 "${{ secrets.SITE_URL }}/tasks/digests?key=${{ secrets.CRON_SECRET }}"
+      - name: Wake First Dig
+        run: curl --fail --silent --show-error --max-time 120 --retry 3 --retry-delay 5 "https://first-dig-night-shift.onrender.com/health"
