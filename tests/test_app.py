@@ -21,7 +21,7 @@ os.environ["ADMIN_EMAILS"] = ""
 from fastapi.testclient import TestClient
 from app.db import connect, init_db, set_meta
 from app.web import auth
-from app.web import marketing_brief
+from app.web import marketing_brief, scheduler
 from app.web.main import app
 
 client = TestClient(app, base_url="https://example.test", raise_server_exceptions=False, follow_redirects=False)
@@ -175,3 +175,15 @@ def test_marketing_brief_includes_trade_specific_proof():
     assert "88 Basement St" in text_body
     assert "Underpinning / basement" in html_body
     assert "88 Basement St" in html_body
+
+
+
+def test_scheduler_only_runs_inside_configured_hour():
+    configured = scheduler.REFRESH_HOUR
+    today = dt.date(2026, 10, 4)
+    inside = dt.datetime(2026, 10, 4, configured, 5)
+    later_hour = (configured + 3) % 24
+    later = dt.datetime(2026, 10, 4, later_hour, 5)
+    assert scheduler._should_run(inside, None) is True
+    assert scheduler._should_run(inside, today) is False
+    assert scheduler._should_run(later, None) is False
