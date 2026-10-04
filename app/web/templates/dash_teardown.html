@@ -20,6 +20,13 @@
   </form>
   <div class="main">
     {% if not full %}
+    <div class="top" aria-label="Quick filters by contractor type">
+      <span class="muted small">START WITH YOUR TRADE</span>
+      <a class="btn sm ghost" href="/teardown?days=90&kinds=teardown,new_house,major_addition,underpinning&stages=applied,issued">Demolition / excavation</a>
+      <a class="btn sm ghost" href="/teardown?days=90&kinds=teardown,new_house,pool,major_addition&stages=applied,issued">Pool / landscape</a>
+      <a class="btn sm ghost" href="/teardown?days=90&kinds=teardown,new_house,multiplex,garden_suite,major_addition,new_building&stages=applied,issued">Builders / GC</a>
+      <a class="btn sm ghost" href="/teardown?days=90&kinds=underpinning,major_addition&stages=applied,issued">Underpinning</a>
+    </div>
     <div class="paywall">
       <div><b>Public view.</b> Records delayed {{ FREE_DELAY_DAYS }} days, builder names and permit numbers hidden.</div><span class="sp"></span>
       {% if user %}<a class="btn primary sm" href="/pricing">Subscribe to see today's filings</a>{% else %}<a class="btn primary sm" href="/login?next=/app/teardown">Start free trial</a>{% endif %}
