@@ -67,6 +67,7 @@ def test_public_routes_and_health():
     h = client.get("/health").json()
     assert h["ok"] is True
     assert h["projects"] >= 2
+    assert h["auth_store"] == "sqlite"
 
 
 def test_head_root_and_security_headers():
