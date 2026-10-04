@@ -13,7 +13,7 @@ from fastapi.templating import Jinja2Templates
 
 from .. import config
 from ..db import connect, get_meta, init_db
-from . import auth, billing, digest, emailer, inbound, queries, scheduler
+from . import auth, auth_store, billing, digest, emailer, inbound, queries, scheduler
 from .hardening import Hardening
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(name)s %(levelname)s %(message)s")
@@ -57,6 +57,7 @@ templates.env.filters["nice_date"] = nice_date
 @app.on_event("startup")
 def _startup():
     init_db()
+    auth_store.init()
     scheduler.start()
 
 
@@ -317,8 +318,13 @@ async def account_post(c: Ctx = Depends(ctx)):
     require_login(c)
     form = await c.request.form()
     areas = ",".join(form.getlist("areas"))
-    c.con.execute("UPDATE users SET digest_teardown=?, digest_openings=?, areas=? WHERE id=?",
-                  (1 if form.get("digest_teardown") else 0, 1 if form.get("digest_openings") else 0, areas, c.user["id"]))
+    auth_store.update_preferences(
+        c.con,
+        c.user["id"],
+        bool(form.get("digest_teardown")),
+        bool(form.get("digest_openings")),
+        areas,
+    )
     return RedirectResponse("/account?saved=1", status_code=303)
 
 
@@ -411,9 +417,11 @@ def admin(c: Ctx = Depends(ctx)):
     require_login(c)
     if not c.is_admin:
         raise HTTPException(403, "Admins only. Add your email to ADMIN_EMAILS.")
-    users = c.con.execute("SELECT * FROM users ORDER BY created DESC LIMIT 200").fetchall()
+    users = auth_store.list_users(c.con, limit=200)
     runs = c.con.execute("SELECT * FROM runs ORDER BY id DESC LIMIT 20").fetchall()
-    counts = {t: c.con.execute(f"SELECT count(*) FROM {t}").fetchone()[0] for t in ("permits", "projects", "licences", "liquor_apps", "openings", "users", "sent_digests")}
+    counts = {t: c.con.execute(f"SELECT count(*) FROM {t}").fetchone()[0] for t in ("permits", "projects", "licences", "liquor_apps", "openings")}
+    counts["users"] = auth_store.count_users(c.con)
+    counts["sent_digests"] = auth_store.count_sent_digests(c.con)
     return render(c, "admin.html", users=users, runs=runs, counts=counts, stats=queries.stats(c.con))
 
 
@@ -425,7 +433,7 @@ def health():
         n = con.execute("SELECT count(*) FROM projects").fetchone()[0]
     finally:
         con.close()
-    return {"ok": True, "last_run": last, "projects": n}
+    return {"ok": True, "last_run": last, "projects": n, "auth_store": auth_store.backend_name()}
 
 
 @app.get("/robots.txt")
