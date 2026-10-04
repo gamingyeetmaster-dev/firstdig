@@ -36,7 +36,7 @@ Hi GTA Grizzly team — I built First Dig to surface Toronto teardown/rebuild fi
 
 A teardown application was filed Sep 30 at 15 Whitewood Rd in Mount Pleasant East with a declared project cost of $700k. That is the kind of early project signal I thought could be relevant to a team doing grading, hardscape and full outdoor builds.
 
-First Dig reads the primary filings each morning and puts the useful ones into a map/feed rather than selling a shared lead list. Preview filtered to pool / landscape-relevant project types: https://firstdig-public.onrender.com/teardown?days=90&kinds=teardown,new_house,pool,major_addition&stages=applied,issued
+First Dig reads the primary filings each morning and puts the useful ones into a map/feed rather than selling a shared lead list. Preview filtered to pool / landscape-relevant project types: https://firstdig-public.onrender.com/teardown?days=7&kinds=teardown,new_house,pool,major_addition&stages=applied,issued
 
 If useful, I can send a 5-project sample matched to your service area.
 
@@ -64,7 +64,7 @@ A teardown application was filed Sep 30 at 5 Kingscross Sq in Stonegate-Queenswa
 
 First Dig reads primary filings each morning and organizes them by address and stage.
 
-Preview filtered to pool / landscape-relevant project types: https://firstdig-public.onrender.com/teardown?days=90&kinds=teardown,new_house,pool,major_addition&stages=applied,issued
+Preview filtered to pool / landscape-relevant project types: https://firstdig-public.onrender.com/teardown?days=7&kinds=teardown,new_house,pool,major_addition&stages=applied,issued
 
 If useful, I can send 5 current projects matched to the areas you serve.
 
@@ -90,7 +90,7 @@ Hi Darsan team — I built First Dig to surface Toronto rebuild filings before t
 
 A teardown application was filed Sep 30 at 276 Poyntz Ave in Lansing-Westgate with a declared project cost of $1M. Given Darsan's design/build, pool and outdoor-structure work, it looked like a useful example of the timing First Dig is trying to capture.
 
-Preview filtered to pool / landscape-relevant project types: https://firstdig-public.onrender.com/teardown?days=90&kinds=teardown,new_house,pool,major_addition&stages=applied,issued
+Preview filtered to pool / landscape-relevant project types: https://firstdig-public.onrender.com/teardown?days=7&kinds=teardown,new_house,pool,major_addition&stages=applied,issued
 
 If you want, I can send 5 current filings matched to your work and let you tell me whether they're genuinely useful or just noise.
 
@@ -116,7 +116,7 @@ Hi MDPA team — I built First Dig to find Toronto residential filings before th
 
 A teardown application was filed Sep 30 at 131 Jersey Ave in Palmerston-Little Italy. It is the kind of record I thought could be relevant to a contractor covering stonework, earthwork, woodwork and broader landscape construction.
 
-Preview filtered to demolition / excavation-relevant project types: https://firstdig-public.onrender.com/teardown?days=90&kinds=teardown,new_house,major_addition,underpinning&stages=applied,issued
+Preview filtered to demolition / excavation-relevant project types: https://firstdig-public.onrender.com/teardown?days=7&kinds=teardown,new_house,major_addition,underpinning&stages=applied,issued
 
 I can send you 5 current matched projects rather than asking you to book a call. If they are not useful, that is useful feedback for me too.
 
@@ -142,7 +142,7 @@ Hi Matthew — I built First Dig to surface Toronto teardown/rebuild filings bef
 
 One example from the latest feed: a teardown application filed Sep 30 at 15 Whitewood Rd in Mount Pleasant East, with a declared project cost of $700k.
 
-Preview filtered to pool / landscape-relevant project types: https://firstdig-public.onrender.com/teardown?days=90&kinds=teardown,new_house,pool,major_addition&stages=applied,issued
+Preview filtered to pool / landscape-relevant project types: https://firstdig-public.onrender.com/teardown?days=7&kinds=teardown,new_house,pool,major_addition&stages=applied,issued
 
 Rather than pitching you on a call, I can just send 5 current projects matched to South Shore's work. You can tell me which, if any, would actually be worth seeing.
 
@@ -168,7 +168,7 @@ Hi Mike — I built First Dig to surface Toronto rebuild filings before pool and
 
 A teardown application was filed Sep 30 at 1 City View Dr in West Humber-Clairville. Since NorthStone handles both custom pools and complete backyard transformations, it looked like a relevant example of the kind of early signal I'm testing.
 
-Preview filtered to pool / landscape-relevant project types: https://firstdig-public.onrender.com/teardown?days=90&kinds=teardown,new_house,pool,major_addition&stages=applied,issued
+Preview filtered to pool / landscape-relevant project types: https://firstdig-public.onrender.com/teardown?days=7&kinds=teardown,new_house,pool,major_addition&stages=applied,issued
 
 If useful, I can send 5 current projects matched to your service area. No call needed.
 
