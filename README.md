@@ -34,6 +34,7 @@ app/web/billing.py       Stripe Checkout, portal, webhook
 app/web/emailer.py       Resend (logs when unconfigured)
 app/web/digest.py        daily email digests
 app/web/scheduler.py     in-process daily refresh (ENABLE_SCHEDULER=1)
+app/web/auth_store.py    optional durable Postgres state (AUTH_DATABASE_URL)
 app/web/templates/       Jinja pages + email templates
 app/web/static/          CSS + map/filter JS
 data/                    raw downloads, signals.db, geo index (gitignored)
@@ -56,6 +57,7 @@ All are under the Open Government Licence – Toronto / Ontario.
 - `GET /tasks/refresh?key=CRON_SECRET` pulls sources and rebuilds. Add `&force=1` to ignore the download cache.
 - `GET /tasks/digests?key=CRON_SECRET` sends the daily emails. Add `&dry=1` to preview.
 - With `ENABLE_SCHEDULER=1`, the in-process scheduler runs once during `REFRESH_HOUR` in Toronto time. `.github/workflows/daily.yml` is a zero-secret wake-up for sleeping free hosts: it pings `/health` at the two UTC times that bracket 06:00 Toronto across DST, and only the wake landing inside the configured local hour can trigger the scheduler. Manual `/tasks/*` endpoints remain protected by `CRON_SECRET`.
+- Set `AUTH_DATABASE_URL` before treating trials/accounts/billing as durable on an ephemeral host. Public permit/opening data stays local and rebuildable; only commercial state moves to Postgres.
 - `/admin` (admins only) shows users, runs and table counts. `/health` is for uptime checks.
 
 ## Deploy
