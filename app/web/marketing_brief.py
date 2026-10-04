@@ -57,9 +57,39 @@ def _rows(con, limit=5):
     return projects, openings
 
 
+TRADE_PROOF_GROUPS = [
+    ("Demolition / excavation", ("teardown", "new_house", "major_addition")),
+    ("Underpinning / basement", ("underpinning",)),
+    ("Pool / landscape adjacency", ("pool", "teardown", "new_house", "major_addition")),
+]
+
+
+def _trade_rows(con, limit=5):
+    """Return fresh project slices aligned to the trades First Dig is actively validating."""
+    groups = []
+    for label, kinds in TRADE_PROOF_GROUPS:
+        placeholders = ",".join("?" * len(kinds))
+        rows = con.execute(
+            f"""
+            SELECT address, neighbourhood, kind, stage, first_filed, est_cost, units_created
+            FROM projects
+            WHERE first_filed IS NOT NULL
+              AND first_filed >= date('now','-30 days')
+              AND stage IN ('applied','issued','construction')
+              AND kind IN ({placeholders})
+            ORDER BY first_filed DESC, score DESC, last_activity DESC
+            LIMIT ?
+            """,
+            (*kinds, limit),
+        ).fetchall()
+        groups.append((label, rows))
+    return groups
+
+
 def render(con, limit=5):
     """Return (subject, html, text) for an internal, evidence-first daily brief."""
     projects, openings = _rows(con, limit=limit)
+    trade_groups = _trade_rows(con, limit=limit)
     today = dt.date.today().isoformat()
     subject = f"First Dig daily proof brief — {today}"
 
@@ -89,6 +119,37 @@ def render(con, limit=5):
             f"<td>{html.escape(_money(r['est_cost']))}</td>"
             "</tr>"
         )
+
+    text_lines += ["", "TRADE-SPECIFIC PROOF — freshest matching project signals"]
+    trade_html_sections = []
+    for label, rows in trade_groups:
+        text_lines += ["", label.upper()]
+        if not rows:
+            text_lines.append("No matching project in the last 30 days.")
+            trade_html_sections.append(
+                f"<h3 style=\"font-size:16px;margin:18px 0 8px\">{html.escape(label)}</h3>"
+                '<p style="color:#667085">No matching project in the last 30 days.</p>'
+            )
+            continue
+        rendered_rows = []
+        for r in rows:
+            line = (
+                f"{r['first_filed'] or '—'} | {r['address'] or '—'} | "
+                f"{r['neighbourhood'] or '—'} | {r['kind'] or '—'} | "
+                f"{r['stage'] or '—'} | declared cost {_money(r['est_cost'])}"
+            )
+            text_lines.append(line)
+            rendered_rows.append(
+                "<tr>"
+                f"<td>{html.escape(str(r['first_filed'] or '—'))}</td>"
+                f"<td>{html.escape(str(r['address'] or '—'))}</td>"
+                f"<td>{html.escape(str(r['neighbourhood'] or '—'))}</td>"
+                f"<td>{html.escape(str(r['kind'] or '—'))}</td>"
+                f"<td>{html.escape(str(r['stage'] or '—'))}</td>"
+                f"<td>{html.escape(_money(r['est_cost']))}</td>"
+                "</tr>"
+            )
+        trade_html_sections.append((label, rendered_rows))
 
     text_lines += ["", "OPENING SOON — freshest multi-signal records"]
     opening_html = []
@@ -129,6 +190,22 @@ def render(con, limit=5):
         + "".join(project_html).replace("<td>", f'<td style="{td}">')
         + "</tbody></table>"
     )
+    trade_tables = []
+    for section in trade_html_sections:
+        if isinstance(section, str):
+            trade_tables.append(section)
+            continue
+        label, rendered_rows = section
+        trade_tables.append(
+            f'<h3 style="font-size:16px;margin:18px 0 8px">{html.escape(label)}</h3>'
+            + f'<table style="{styles}"><thead><tr>'
+            + "".join(f'<th style="{th}">{x}</th>' for x in ["Filed", "Address", "Area", "Kind", "Stage", "Declared cost"])
+            + "</tr></thead><tbody>"
+            + "".join(rendered_rows).replace("<td>", f'<td style="{td}">')
+            + "</tbody></table>"
+        )
+    table_trade = "".join(trade_tables)
+
     table_opening = (
         f'<table style="{styles}"><thead><tr>'
         + "".join(f'<th style="{th}">{x}</th>' for x in ["Signal", "Business / category", "Address", "Area", "Signals"])
@@ -149,6 +226,8 @@ def render(con, limit=5):
       </p>
       <h2 style="font-size:20px;margin-top:28px">Teardown Feed — freshest high-value project stages</h2>
       {table_project}
+      <h2 style="font-size:20px;margin-top:28px">Trade-specific proof — freshest matching project signals</h2>
+      {table_trade}
       <h2 style="font-size:20px;margin-top:28px">Opening Soon — freshest multi-signal records</h2>
       {table_opening}
       <h2 style="font-size:20px;margin-top:28px">Editorial gate</h2>
