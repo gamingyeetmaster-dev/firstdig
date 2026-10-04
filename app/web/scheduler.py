@@ -41,11 +41,22 @@ def _job():
         con.close()
 
 
+def _should_run(now, last_day):
+    """Run once during the configured local hour, never merely because it is later.
+
+    This matters on hosts that restart on deploy: a 9 p.m. deploy must not replay
+    the morning refresh just because 9 >= 6.
+    """
+    return now.hour == REFRESH_HOUR and last_day != now.date()
+
+
 def _loop():
     last_day = None
     while True:
         now = _now()
-        if now.hour >= REFRESH_HOUR and last_day != now.date():
+        if _should_run(now, last_day):
+            # Claim the day before work starts so a failure does not spin every
+            # five minutes. The next scheduled day (or a manual refresh) retries.
             last_day = now.date()
             log.info("scheduled refresh starting")
             _job()
