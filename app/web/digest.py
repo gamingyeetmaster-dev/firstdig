@@ -10,6 +10,7 @@ from urllib.parse import quote
 
 from ..config import BASE_URL
 from .auth import access_for
+from . import auth_store
 from .queries import redact_opening, redact_project
 
 _env = Environment(loader=FileSystemLoader(str(__import__("pathlib").Path(__file__).parent / "templates")),
@@ -58,14 +59,14 @@ def send_all(con, send_fn, log=print, dry=False):
     from ..config import PRODUCTS
     today = dt.date.today().isoformat()
     since = (dt.date.today() - dt.timedelta(days=1)).isoformat()
-    users = con.execute("SELECT * FROM users").fetchall()
+    users = auth_store.list_users(con)
     sent = 0
     for u in users:
         acc = access_for(u)
         for slug, product in PRODUCTS.items():
             if not acc.get(slug) or not u["digest_" + slug]:
                 continue
-            if con.execute("SELECT 1 FROM sent_digests WHERE user_id=? AND product=? AND sent_date=?", (u["id"], slug, today)).fetchone():
+            if auth_store.digest_was_sent(con, u["id"], slug, today):
                 continue
             items = teardown_items(con, u, since) if slug == "teardown" else opening_items(con, u, since)
             if not items:
@@ -76,7 +77,7 @@ def send_all(con, send_fn, log=print, dry=False):
                 log(f"  would send {subject} -> {u['email']}")
             else:
                 send_fn(u["email"], subject, html, text)
-                con.execute("INSERT INTO sent_digests VALUES (?,?,?)", (u["id"], slug, today))
+                auth_store.mark_digest_sent(con, u["id"], slug, today)
             sent += 1
     log(f"  digests: {sent} sent")
     return sent
