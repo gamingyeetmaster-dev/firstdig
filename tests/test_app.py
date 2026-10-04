@@ -21,6 +21,7 @@ os.environ["ADMIN_EMAILS"] = ""
 from fastapi.testclient import TestClient
 from app.db import connect, init_db, set_meta
 from app.web import auth
+from app.web import marketing_brief
 from app.web.main import app
 
 client = TestClient(app, base_url="https://example.test", raise_server_exceptions=False, follow_redirects=False)
@@ -152,3 +153,25 @@ def test_billing_disabled_fails_closed():
     r = client.post("/billing/checkout/teardown", headers={"origin":"https://example.test"})
     assert r.status_code == 303
     assert r.headers["location"] == "/pricing?billing=off"
+
+
+
+def test_marketing_brief_includes_trade_specific_proof():
+    today = dt.date.today().isoformat()
+    with connect() as con:
+        con.execute(
+            """INSERT OR REPLACE INTO projects(
+                project_id,address,postal,ward,neighbourhood,lat,lon,kind,stage,headline,description,
+                est_cost,units_created,builder_name,first_filed,last_activity,issued_date,permit_nums,signals,score
+            ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+            ("underpinning-proof","88 Basement St","M4C1C1","1","Leaside",43.73,-79.33,
+             "underpinning","applied","Underpinning / basement","Test underpinning project",
+             180000,0,"",today,today,None,"P-UNDER","underpinning",40),
+        )
+        subject, html_body, text_body = marketing_brief.render(con, limit=5)
+    assert "daily proof brief" in subject.lower()
+    assert "TRADE-SPECIFIC PROOF" in text_body
+    assert "UNDERPINNING / BASEMENT" in text_body
+    assert "88 Basement St" in text_body
+    assert "Underpinning / basement" in html_body
+    assert "88 Basement St" in html_body
