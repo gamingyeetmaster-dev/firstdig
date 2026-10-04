@@ -58,6 +58,7 @@ All are under the Open Government Licence – Toronto / Ontario.
 - `GET /tasks/digests?key=CRON_SECRET` sends the daily emails. Add `&dry=1` to preview.
 - With `ENABLE_SCHEDULER=1`, the in-process scheduler runs once during `REFRESH_HOUR` in Toronto time. `.github/workflows/daily.yml` is a zero-secret wake-up for sleeping free hosts: it pings `/health` at the two UTC times that bracket 06:00 Toronto across DST, and only the wake landing inside the configured local hour can trigger the scheduler. Manual `/tasks/*` endpoints remain protected by `CRON_SECRET`.
 - Set `AUTH_DATABASE_URL` before treating trials/accounts/billing as durable on an ephemeral host. Public permit/opening data stays local and rebuildable; only commercial state moves to Postgres.
+- Current validation datastore note: the existing free Render database `first-dig-auth` expires 2026-10-28. Treat it as a zero-cost validation bridge, not permanent production storage; migrate durable state before that date if validation continues.
 - `/admin` (admins only) shows users, runs and table counts. `/health` is for uptime checks.
 
 ## Deploy
