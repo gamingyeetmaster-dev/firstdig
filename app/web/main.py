@@ -249,7 +249,7 @@ def api_openings(c: Ctx = Depends(ctx)):
     items, _, _ = queries.openings(c.con, dict(c.request.query_params), full, limit=1500)
     feats = [{"type": "Feature", "geometry": {"type": "Point", "coordinates": [o["lon"], o["lat"]]},
               "properties": {"id": o["opening_id"], "name": o["name"] or o["category_label"], "address": o["address"], "cat": o["category"],
-                             "signals": o["signal_count"], "last": o["last_signal"], "hood": o["neighbourhood"]}}
+                             "filings": o["signal_count"], "sources": o["source_count"], "last": o["last_signal"], "hood": o["neighbourhood"]}}
              for o in items if o["lat"]]
     return JSONResponse({"type": "FeatureCollection", "features": feats})
 
@@ -269,10 +269,10 @@ def export_csv(product: str, c: Ctx = Depends(ctx)):
                         p["first_filed"], p["issued_date"], p["last_activity"], p["permit_nums"], p["description"], p["lat"], p["lon"], f"{config.BASE_URL}/p/{quote(p['project_id'])}"])
     elif product == "openings":
         items, _, _ = queries.openings(c.con, dict(c.request.query_params), True, limit=5000)
-        w.writerow(["name", "category", "address", "city", "postal", "neighbourhood", "phone", "owner_or_applicant", "first_signal", "last_signal", "signals", "signal_types", "est_cost", "lat", "lon", "url"])
+        w.writerow(["name", "category", "address", "city", "postal", "neighbourhood", "phone", "owner_or_applicant", "first_signal", "last_signal", "filings", "source_count", "source_types", "est_cost", "lat", "lon", "url"])
         for o in items:
             w.writerow([o["name"], o["category_label"], o["address"], o["city"], o["postal"], o["neighbourhood"], o["phone"], o["owner"], o["first_signal"], o["last_signal"],
-                        o["signal_count"], " ".join(o["signal_types"]), o["est_cost"], o["lat"], o["lon"], f"{config.BASE_URL}/o/{quote(o['opening_id'], safe='')}"])
+                        o["signal_count"], o["source_count"], " ".join(o["signal_types"]), o["est_cost"], o["lat"], o["lon"], f"{config.BASE_URL}/o/{quote(o['opening_id'], safe='')}"])
     else:
         raise HTTPException(404)
     fname = f"{product}-{dt.date.today().isoformat()}.csv"
