@@ -5,6 +5,8 @@ Two subscription data feeds built from public filings, refreshed daily:
 - **Teardown Feed** — every teardown, new house, multiplex, garden suite and major addition filed with Toronto Building, rolled up per address, classified, geocoded, with the builder's name. For pool, landscape, fence, window, millwork and moving companies.
 - **Opening Soon** — restaurants, bars, cafés, clinics, salons and shops 60 to 120 days before they open, joined by address from three independent filings: AGCO liquor licence applications, City of Toronto business licences, and commercial fit-out building permits. For POS/payments, insurance, distributors, signage, cleaning.
 
+Read the [public case study](docs/CASE_STUDY.md) for the verified production snapshot, privacy and recovery work, and the remaining commercial release gates.
+
 One Python process, one SQLite file, no external services required to run. Stripe and Resend plug in through environment variables when you're ready to charge and email.
 
 ## Run it locally
