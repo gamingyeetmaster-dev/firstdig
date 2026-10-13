@@ -5,8 +5,8 @@
   <form class="rail" id="filters">
     <h4>Time window</h4>
     <select name="days">{% for d in [7,14,30,45,60,90,150] %}<option value="{{ d }}" {% if active.days == d %}selected{% endif %}>Signal in last {{ d }} days</option>{% endfor %}</select>
-    <h4>Minimum signals</h4>
-    <select name="minsig">{% for d in [1,2,3] %}<option value="{{ d }}" {% if active.minsig == d %}selected{% endif %}>{{ d }}+ independent filing{{ '' if d == 1 else 's' }}</option>{% endfor %}</select>
+    <h4>Minimum source categories</h4>
+    <select name="minsig">{% for d in [1,2,3] %}<option value="{{ d }}" {% if active.minsig == d %}selected{% endif %}>{{ d }}+ distinct source categor{{ 'y' if d == 1 else 'ies' }}</option>{% endfor %}</select>
     <h4>Area</h4>
     <select name="city"><option value="toronto" {% if active.city == 'toronto' %}selected{% endif %}>Toronto only</option><option value="all" {% if active.city == 'all' %}selected{% endif %}>All Ontario (liquor applications)</option></select>
     <h4>Category</h4>
@@ -34,16 +34,16 @@
     </div>
     {% if full %}<div id="map" data-url="/api/openings.geojson" data-kind="openings"></div>{% endif %}
     <div class="tbl"><table>
-      <thead><tr><th>Latest</th><th>Business</th><th>Category</th><th>Address</th><th>Signals</th><th>Contact</th><th class="r">Score</th></tr></thead>
+      <thead><tr><th>Latest</th><th>Business</th><th>Category</th><th>Address</th><th>Evidence</th><th>Contact</th><th class="r">Score</th></tr></thead>
       <tbody>{% for o in items %}<tr>
         <td class="num">{{ o.last_signal }}<span class="sub">first {{ o.first_signal }}</span></td>
         <td>{% if full %}<a class="addr" href="/o/{{ o.opening_id | urlencode }}">{{ o.name or o.category_label }}</a>{% elif o.name %}<span class="value-tag">{{ o.name }}</span>{% else %}{{ o.category_label }}{% endif %}{% if o.owner and not o.redacted %}<span class="sub">{{ o.owner }}</span>{% endif %}</td>
         <td><span class="pill op">{{ o.category_label }}</span></td>
         <td>{{ o.address }}<span class="sub">{{ o.neighbourhood or o.city }}</span></td>
-        <td><b class="num">{{ o.signal_count }}</b> <span class="muted small">{{ o.signal_types | join(' + ') }}</span></td>
+        <td><b class="num">{{ o.source_count }} source{{ '' if o.source_count == 1 else 's' }}</b><span class="sub">{{ o.signal_count }} filing{{ '' if o.signal_count == 1 else 's' }} · {{ o.signal_types | join(' + ') }}</span></td>
         <td>{% if o.phone %}{% if o.redacted %}<span class="value-tag">{{ o.phone }}</span>{% else %}<span class="num">{{ o.phone }}</span>{% endif %}{% else %}<span class="muted">—</span>{% endif %}</td>
         <td class="r num">{{ o.score }}</td>
-      </tr>{% else %}<tr><td colspan="7" class="muted">Nothing matches. Widen the time window or lower the minimum signals.</td></tr>{% endfor %}</tbody>
+      </tr>{% else %}<tr><td colspan="7" class="muted">Nothing matches. Widen the time window or lower the minimum source count.</td></tr>{% endfor %}</tbody>
     </table></div>
     {% if total > items | length %}<p class="muted small" style="margin-top:8px">Showing the first {{ items | length }}. Narrow the filters or export CSV for everything.</p>{% endif %}
   </div>
