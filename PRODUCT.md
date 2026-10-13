@@ -23,7 +23,7 @@ Runs as one Python process against one SQLite file; Stripe and Resend are option
 
 ## Positioning
 
-Not a lead-gen marketplace. The two feeds are built by reading the same primary-record filings the city and province already publish (Toronto Building permits, AGCO liquor licence applications, Toronto business licences), then joining, classifying, and geocoding them per address — not selling the same shared lead to multiple buyers. Opening Soon's specific mechanism is stacking three independent filings by address: two or more signals at one address is treated as a business that is confirmed to be opening, not a rumour. Timing is the edge — a permit or licence application lands 60–180 days before the subscriber's own customer needs their trade or service, well ahead of when a lead-gen list would surface the same address.
+Not a lead-gen marketplace. The two feeds are built by reading the same primary-record filings the city and province already publish (Toronto Building permits, AGCO liquor licence applications, Toronto business licences), then joining, classifying, and geocoding them per address — not selling the same shared lead to multiple buyers. Opening Soon joins public filings by address and records both raw filing volume and distinct source categories. Cross-source records provide stronger corroboration than repeated filings from one source, but neither confirms that a business will open or identifies an opening date. Timing is the edge — a permit or licence application lands 60–180 days before the subscriber's own customer needs their trade or service, well ahead of when a lead-gen list would surface the same address.
 
 ## Operating Context
 
