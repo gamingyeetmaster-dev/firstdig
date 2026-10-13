@@ -29,7 +29,7 @@
       <div><dt>Category</dt><dd>{{ hero.category_label }}</dd></div>
       <div><dt>Neighbourhood</dt><dd>{{ hero.neighbourhood or hero.city }}</dd></div>
       <div><dt>Latest signal</dt><dd class="mono">{{ hero.last_signal | nice_date }}</dd></div>
-      <div><dt>Signals</dt><dd class="mono">{{ hero.signal_count }}</dd></div>
+      <div><dt>Filings</dt><dd class="mono">{{ hero.signal_count }}</dd></div>
     </dl>
 
     <div class="track-cta">
@@ -42,7 +42,7 @@
 
   <div class="stat-row">
     <div class="stat-item big"><b class="num">{{ stats.openings_30d }}</b><span>Businesses with a new signal, 30 days</span></div>
-    <div class="stat-item"><b class="num">{{ stats.openings_multi_30d }}</b><span>With two or more independent signals</span></div>
+    <div class="stat-item"><b class="num">{{ stats.openings_multi_30d }}</b><span>With two or more public filings</span></div>
     <div class="stat-item"><b class="num">{{ stats.liquor_live }}</b><span>Liquor applications on public notice now</span></div>
     {% for r in by_cat[:2] %}<div class="stat-item"><b class="num">{{ r.n }}</b><span>{{ r.category.replace('_',' ') | capitalize }} signals, 30 days</span></div>{% endfor %}
   </div>
@@ -50,9 +50,9 @@
 </div></section>
 
 <section><div class="wrap">
-  <div class="sec-h"><h2>Strongest current signals</h2><span class="muted small">2+ signals, last 90 days, public sample delayed {{ FREE_DELAY_DAYS }} days with names and street numbers hidden</span></div>
+  <div class="sec-h"><h2>Strongest current signals</h2><span class="muted small">2+ filings, last 90 days, public sample delayed {{ FREE_DELAY_DAYS }} days with names and street numbers hidden</span></div>
   <div class="tbl"><table>
-    <thead><tr><th>Latest</th><th>Business</th><th>Category</th><th>Address</th><th>Neighbourhood</th><th>Signals</th></tr></thead>
+    <thead><tr><th>Latest</th><th>Business</th><th>Category</th><th>Address</th><th>Neighbourhood</th><th>Filings</th></tr></thead>
     <tbody>{% for o in items %}<tr>
       <td class="num">{{ o.last_signal | nice_date }}</td>
       <td><span class="value-tag">{{ o.name or 'Name on file' }}</span></td>
@@ -71,7 +71,7 @@
     <div class="differentiator"><b>AGCO liquor application</b><p>Liquor-sales licence applications on public notice can provide a premises name and address. First Dig treats that filing as one signal in the source trail, not as proof of an opening date.</p></div>
     <div class="differentiator"><b>City business licence</b><p>Municipal business-licence records can add an operating name, licence category and other fields disclosed in the public source.</p></div>
     <div class="differentiator"><b>Fit-out building permit</b><p>Commercial interior-alteration and fit-out permits can add project descriptions, stage information and declared construction value from the permit record.</p></div>
-    <div class="differentiator"><b>Heuristic score</b><p>First Dig weights signal type, additional independent signals, recency and available project value to help sort the feed. It is a prioritization heuristic, not a prediction that a business will open or buy.</p></div>
+    <div class="differentiator"><b>Heuristic score</b><p>First Dig weights source type, additional source categories, recency and available project value to help sort the feed. It is a prioritization heuristic, not a prediction that a business will open or buy.</p></div>
   </div>
 </div></section>
 

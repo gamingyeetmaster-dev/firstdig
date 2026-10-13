@@ -90,7 +90,7 @@ or months. Teach the workflow, not generic "sales tips."
 Short native screen capture: filter → record → source trail → export/digest. One benefit per video.
 
 **4. Build / methodology**
-How First Dig joins filings, why two independent signals are stronger than one, how source freshness
+How First Dig joins filings, why distinct source categories are stronger than repeated filings, how source freshness
 is handled, and what the product deliberately does not enrich.
 
 Avoid motivational founder content, generic AI/startup memes, daily feature dumps, fake urgency and
