@@ -21,7 +21,7 @@ First Dig explores whether those records can become a smaller, source-linked dec
 First Dig currently builds two feeds from public records:
 
 1. **Teardown Feed** groups Toronto building permits by project, classifies residential scopes, geocodes them, and supports geographic filtering.
-2. **Opening Soon** joins business licences, liquor applications, and commercial fit-out permits at the same address to identify multi-signal openings.
+2. **Opening Soon** joins business licences, liquor applications, and commercial fit-out permits at the same address to identify addresses with one or more relevant filings.
 
 The application includes magic-link authentication, trial entitlements, product-specific access controls, administrator diagnostics, daily data refresh, and optional Stripe, Resend, and Postgres integrations.
 
@@ -34,9 +34,11 @@ This snapshot was verified from the production recovery that started at **2026-1
 | Active-permit source rows processed | 202,293 |
 | Teardown Feed projects built | 6,676 |
 | Opening Soon records built | 2,389 |
-| Opening records with at least two signals | 244 |
+| Opening records with at least two filings | 244 |
 | Production readiness after recovery | Ready and fresh |
 | Email sent during recovery | None |
+
+The filing count is not a count of independent sources: repeated permits or licences at one address can contribute multiple filings. Cross-source corroboration requires distinct source categories, tracked separately in [issue #8](https://github.com/gamingyeetmaster-dev/firstdig/issues/8).
 
 These are pipeline outputs, not customers, qualified leads, or revenue.
 
