@@ -85,8 +85,23 @@ def test_anonymous_data_is_delayed_and_redacted():
     assert "Fresh Builder" not in r.text
     data = client.get("/api/openings.geojson?days=90&minsig=2").json()
     assert data["type"] == "FeatureCollection"
-    assert len(data["features"]) >= 1
+    assert data["features"] == []
     assert "20 Old St" not in str(data)
+
+
+def test_public_openings_never_expose_exact_location_or_raw_ids():
+    anon = TestClient(app, base_url="https://example.test", follow_redirects=False)
+    for path in ("/openings", "/app/openings?days=90&minsig=2"):
+        r = anon.get(path)
+        assert r.status_code == 200
+        assert "opening-old" not in r.text
+        assert "/o/" not in r.text
+        assert "20 Old St" not in r.text
+        assert "43.72" not in r.text
+        assert "-79.32" not in r.text
+    data = anon.get("/api/openings.geojson?days=90&minsig=2").json()
+    assert data == {"type": "FeatureCollection", "features": []}
+    assert anon.get("/o/opening-old").status_code == 404
 
 
 def test_magic_link_trial_and_protected_export():
@@ -219,7 +234,7 @@ def test_public_direct_and_nearby_embargo_four_paths():
     old_p = anon.get("/p/old-house")
     old_o = anon.get("/o/opening-old")
     assert old_p.status_code == 200, old_p.text[:300]
-    assert old_o.status_code == 200, old_o.text[:300]
+    assert old_o.status_code == 404, old_o.text[:300]
     for sensitive in ("11 Fresh St", "99 Undated St", "22 Fresh St", "New Private Cafe"):
         assert sensitive not in old_p.text
         assert sensitive not in old_o.text

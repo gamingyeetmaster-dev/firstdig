@@ -205,6 +205,10 @@ def project_detail(project_id: str, c: Ctx = Depends(ctx)):
 
 @app.get("/o/{opening_id:path}", response_class=HTMLResponse)
 def opening_detail(opening_id: str, c: Ctx = Depends(ctx)):
+    # Opening IDs are normalized street addresses. Until public opaque IDs are
+    # available, exposing this route would disclose the exact location in the URL.
+    if not c.access["openings"]:
+        raise HTTPException(404, "Record not found")
     o = queries.opening(c.con, opening_id)
     if not o:
         raise HTTPException(404, "Record not found")
@@ -238,6 +242,10 @@ def api_teardown(c: Ctx = Depends(ctx)):
 @app.get("/api/openings.geojson")
 def api_openings(c: Ctx = Depends(ctx)):
     full = c.access["openings"]
+    # A marker's coordinates and raw opening ID reveal the street number even
+    # when its display address is redacted.
+    if not full:
+        return JSONResponse({"type": "FeatureCollection", "features": []})
     items, _, _ = queries.openings(c.con, dict(c.request.query_params), full, limit=1500)
     feats = [{"type": "Feature", "geometry": {"type": "Point", "coordinates": [o["lon"], o["lat"]]},
               "properties": {"id": o["opening_id"], "name": o["name"] or o["category_label"], "address": o["address"], "cat": o["category"],
