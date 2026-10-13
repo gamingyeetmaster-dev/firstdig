@@ -165,6 +165,10 @@ def redact_opening(o, full_access):
         # keep street, hide the number
         if o["address"]:
             o["address"] = " ".join(o["address"].split(" ")[1:]) + " (number hidden)"
+        # Exact coordinates identify the street number even after the address is
+        # redacted. Never pass them into anonymous templates or JSON responses.
+        o["lat"] = None
+        o["lon"] = None
         o["redacted"] = True
     return o
 

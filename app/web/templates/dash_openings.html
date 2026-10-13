@@ -27,17 +27,17 @@
     {% endif %}
     <div class="top">
       <h2>{{ total }} business{{ '' if total == 1 else 'es' }}</h2>
-      <span class="muted small" id="map-count"></span>
+      {% if full %}<span class="muted small" id="map-count"></span>{% endif %}
       <span class="sp"></span>
-      <button class="btn sm ghost" id="map-toggle" type="button">Toggle map</button>
+      {% if full %}<button class="btn sm ghost" id="map-toggle" type="button">Toggle map</button>{% endif %}
       {% if full %}<a class="btn sm" href="/export/openings.csv{{ ('?' + request.url.query) if request.url.query else '' }}">Export CSV</a>{% endif %}
     </div>
-    <div id="map" data-url="/api/openings.geojson" data-kind="openings"></div>
+    {% if full %}<div id="map" data-url="/api/openings.geojson" data-kind="openings"></div>{% endif %}
     <div class="tbl"><table>
       <thead><tr><th>Latest</th><th>Business</th><th>Category</th><th>Address</th><th>Signals</th><th>Contact</th><th class="r">Score</th></tr></thead>
       <tbody>{% for o in items %}<tr>
         <td class="num">{{ o.last_signal }}<span class="sub">first {{ o.first_signal }}</span></td>
-        <td><a class="addr" href="/o/{{ o.opening_id | urlencode }}">{% if o.redacted and o.name %}<span class="value-tag">{{ o.name }}</span>{% else %}{{ o.name or o.category_label }}{% endif %}</a>{% if o.owner and not o.redacted %}<span class="sub">{{ o.owner }}</span>{% endif %}</td>
+        <td>{% if full %}<a class="addr" href="/o/{{ o.opening_id | urlencode }}">{{ o.name or o.category_label }}</a>{% elif o.name %}<span class="value-tag">{{ o.name }}</span>{% else %}{{ o.category_label }}{% endif %}{% if o.owner and not o.redacted %}<span class="sub">{{ o.owner }}</span>{% endif %}</td>
         <td><span class="pill op">{{ o.category_label }}</span></td>
         <td>{{ o.address }}<span class="sub">{{ o.neighbourhood or o.city }}</span></td>
         <td><b class="num">{{ o.signal_count }}</b> <span class="muted small">{{ o.signal_types | join(' + ') }}</span></td>

@@ -55,7 +55,7 @@
     <thead><tr><th>Latest</th><th>Business</th><th>Category</th><th>Address</th><th>Neighbourhood</th><th>Signals</th></tr></thead>
     <tbody>{% for o in items %}<tr>
       <td class="num">{{ o.last_signal | nice_date }}</td>
-      <td><a class="addr" href="/o/{{ o.opening_id | urlencode }}"><span class="value-tag">{{ o.name or 'Name on file' }}</span></a></td>
+      <td><span class="value-tag">{{ o.name or 'Name on file' }}</span></td>
       <td><span class="pill op">{{ o.category_label }}</span></td>
       <td>{{ o.address }}</td>
       <td>{{ o.neighbourhood or o.city }}</td>
