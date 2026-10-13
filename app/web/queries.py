@@ -156,7 +156,7 @@ def redact_opening(o, full_access):
     o["category_label"] = CATEGORY_LABELS.get(o["category"], o["category"])
     o["signal_list"] = json.loads(o["signals"] or "[]")
     o["signal_types"] = sorted({s["type"] for s in o["signal_list"]})
-    if o["signal_count"] > 8 and not o["name"]:
+    if (o["signal_count"] or 0) > 8 and not o["name"]:
         o["name"] = "Multiple tenants (mall or tower)"
     if not full_access:
         o["name"] = REDACTED if o["name"] else None

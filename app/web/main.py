@@ -187,6 +187,9 @@ def project_detail(project_id: str, c: Ctx = Depends(ctx)):
     if not p:
         raise HTTPException(404, "Project not found")
     full = c.access["teardown"]
+    # The public list excludes recent and undated rows; direct URLs must too.
+    if not full and (not p["first_filed"] or queries.is_recent(p["first_filed"])):
+        raise HTTPException(404, "Project not found")
     p = queries.redact_project(p, full)
     locked = not full and queries.is_recent(p["first_filed"])
     if not full:
@@ -195,7 +198,8 @@ def project_detail(project_id: str, c: Ctx = Depends(ctx)):
         p.update({"description": "Filed within the last %d days. Subscribers see this record today." % config.FREE_DELAY_DAYS,
                   "headline": p["kind_label"], "est_cost": None, "units_created": None, "signals": "", "last_activity": None, "issued_date": None})
     nearby = c.con.execute(
-        "SELECT * FROM projects WHERE neighbourhood=? AND project_id!=? ORDER BY first_filed DESC LIMIT 8", (p["neighbourhood"], project_id)).fetchall()
+        "SELECT * FROM projects WHERE neighbourhood=? AND project_id!=? AND (? OR first_filed <= ?) ORDER BY first_filed DESC LIMIT 8",
+        (p["neighbourhood"], project_id, int(full), (dt.date.today() - dt.timedelta(days=config.FREE_DELAY_DAYS)).isoformat())).fetchall()
     return render(c, "detail_project.html", p=p, permits=permits, full=full, locked=locked, nearby=[queries.redact_project(dict(r), full) for r in nearby], product=config.PRODUCTS["teardown"])
 
 
@@ -205,12 +209,16 @@ def opening_detail(opening_id: str, c: Ctx = Depends(ctx)):
     if not o:
         raise HTTPException(404, "Record not found")
     full = c.access["openings"]
+    if not full and (not o["last_signal"] or queries.is_recent(o["last_signal"])):
+        raise HTTPException(404, "Record not found")
     o = queries.redact_opening(o, full)
     locked = not full and queries.is_recent(o["last_signal"])
     if locked:
         o.update({"signal_list": [{"date": o["last_signal"], "type": "locked", "detail": "Filed within the last %d days. Subscribers see the paper trail today." % config.FREE_DELAY_DAYS}],
                   "score": None, "est_cost": None, "first_signal": None})
-    nearby = c.con.execute("SELECT * FROM openings WHERE neighbourhood=? AND opening_id!=? ORDER BY last_signal DESC LIMIT 8", (o["neighbourhood"], opening_id)).fetchall()
+    nearby = c.con.execute(
+        "SELECT * FROM openings WHERE neighbourhood=? AND opening_id!=? AND (? OR last_signal <= ?) ORDER BY last_signal DESC LIMIT 8",
+        (o["neighbourhood"], opening_id, int(full), (dt.date.today() - dt.timedelta(days=config.FREE_DELAY_DAYS)).isoformat())).fetchall()
     return render(c, "detail_opening.html", o=o, full=full, locked=locked, nearby=[queries.redact_opening(dict(r), full) for r in nearby], product=config.PRODUCTS["openings"])
 
 
@@ -427,13 +435,25 @@ def admin(c: Ctx = Depends(ctx)):
 
 @app.get("/health")
 def health():
+    """HTTP 200 proves liveness only. Report ready and scheduled freshness separately."""
     con = connect()
     try:
         last = get_meta(con, "last_run")
         n = con.execute("SELECT count(*) FROM projects").fetchone()[0]
     finally:
         con.close()
-    return {"ok": True, "last_run": last, "projects": n, "auth_store": auth_store.backend_name()}
+    now = scheduler._now()
+    return {"ok": True, "ready": scheduler._data_ready(now, last, n),
+            "fresh": scheduler._data_fresh(now, last, n),
+            "last_run": last, "projects": n,
+            "auth_store": auth_store.backend_name()}
+
+
+@app.get("/ready")
+def ready():
+    """503 only if unavailable/stale; a separate monitor checks fresh=false."""
+    payload = health()
+    return JSONResponse(payload, status_code=200 if payload["ready"] else 503)
 
 
 @app.get("/robots.txt")
