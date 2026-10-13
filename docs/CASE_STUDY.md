@@ -27,11 +27,11 @@ The application includes magic-link authentication, trial entitlements, product-
 
 ## Verified operating snapshot
 
-The production recovery completed on October 13, 2026 after a cold start.
+This snapshot was verified from the production recovery that started at **2026-10-13 10:38:46 UTC**. Source counts can change on later refreshes.
 
 | Measure | Verified result |
 |---|---:|
-| Active-permit source rows processed | 202,298 |
+| Active-permit source rows processed | 202,293 |
 | Teardown Feed projects built | 6,676 |
 | Opening Soon records built | 2,389 |
 | Opening records with at least two signals | 244 |
