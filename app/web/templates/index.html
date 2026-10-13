@@ -46,7 +46,7 @@
     <div class="stat-item"><b class="num">{{ stats.projects_7d }}</b><span>Residential permits filed this week</span></div>
     <div class="stat-item"><b class="num">{{ stats.teardowns_30d }}</b><span>Of those: teardowns, new houses &amp; multiplexes</span></div>
     <div class="stat-item big"><b class="num">{{ stats.cost_30d | money }}</b><span>Declared construction value, 30 days</span></div>
-    <div class="stat-item"><b class="num">{{ stats.openings_multi_30d }}</b><span>Businesses with 2+ public filings at one address</span></div>
+    <div class="stat-item"><b class="num">{{ stats.openings_multi_30d }}</b><span>Businesses corroborated by 2+ source categories</span></div>
   </div>
 
 </div></section>
@@ -75,11 +75,11 @@
     <h2>{{ PRODUCTS.openings.tagline }}</h2>
     <p class="muted small" style="margin-top:8px">For POS and payments reps, insurance brokers, distributors, commercial cleaners, signage shops and linen services &mdash; anyone who sells to a new business in its first 90 days.</p>
     <div class="track-sample"><div class="tbl"><table>
-      <thead><tr><th>Latest</th><th>Business</th><th>Signals</th></tr></thead>
+      <thead><tr><th>Latest</th><th>Business</th><th>Evidence</th></tr></thead>
       <tbody>{% for o in sample_o %}<tr>
         <td class="num">{{ o.last_signal | nice_date }}</td>
         <td><span class="addr">{{ o.category_label }}</span><span class="sub">{{ o.address }} &middot; {{ o.neighbourhood }}</span></td>
-        <td><span class="pill op">{{ o.signal_count }}</span> {{ o.signal_types | join(' + ') }}</td>
+        <td><span class="pill op">{{ o.source_count }} sources</span> {{ o.signal_count }} filings · {{ o.signal_types | join(' + ') }}</td>
       </tr>{% endfor %}</tbody>
     </table></div></div>
     <p class="small muted" style="margin-top:10px">Public sample hides names and street numbers. Trial users see the filed name, address, phone and applicant where those fields exist in the source record.</p>
