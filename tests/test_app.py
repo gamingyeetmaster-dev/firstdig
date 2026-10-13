@@ -188,3 +188,46 @@ def test_scheduler_only_runs_inside_configured_hour():
     assert scheduler._should_run(inside, None) is True
     assert scheduler._should_run(inside, today) is False
     assert scheduler._should_run(later, None) is False
+
+
+# --- 21-day public embargo regression: direct detail + nearby, both products ---
+def test_public_direct_and_nearby_embargo_four_paths():
+    anon = TestClient(app, base_url="https://example.test", follow_redirects=False)
+    today = dt.date.today().isoformat()
+    with connect() as con:
+        con.execute("""INSERT OR REPLACE INTO openings
+            (opening_id,name,category,address,city,neighbourhood,last_signal,
+             first_signal,signals,signal_count,score)
+            VALUES (?,?,?,?,?,?,?,?,?,?,?)""",
+            ("opening-fresh-embargo", "New Private Cafe", "restaurant", "22 Fresh St",
+             "TORONTO", "Leaside", today, today, "[]", 1, 50))
+        con.execute("""INSERT OR REPLACE INTO projects
+            (project_id,address,neighbourhood,kind,stage,first_filed,permit_nums)
+            VALUES (?,?,?,?,?,?,?)""",
+            ("undated-project-embargo", "99 Undated St", "Leaside", "teardown",
+             "applied", None, ""))
+        con.execute("""INSERT OR REPLACE INTO openings
+            (opening_id,name,address,neighbourhood,last_signal,signals)
+            VALUES (?,?,?,?,?,?)""",
+            ("undated-opening-embargo", "Undated Cafe", "99 Undated St", "Leaside", None, "[]"))
+    # Public direct URLs must obey exactly the same embargo as list/map endpoints.
+    for path in ("/p/fresh-house", "/o/opening-fresh-embargo",
+                 "/p/undated-project-embargo", "/o/undated-opening-embargo"):
+        r = anon.get(path)
+        assert r.status_code == 404, (path, r.status_code, r.text[:300])
+    # Old detail pages must not expose nearby fresh/undated records.
+    old_p = anon.get("/p/old-house")
+    old_o = anon.get("/o/opening-old")
+    assert old_p.status_code == 200, old_p.text[:300]
+    assert old_o.status_code == 200, old_o.text[:300]
+    for sensitive in ("11 Fresh St", "99 Undated St", "22 Fresh St", "New Private Cafe"):
+        assert sensitive not in old_p.text
+        assert sensitive not in old_o.text
+    # Trial subscriber retains access to direct and nearby recent records.
+    subscriber = TestClient(app, base_url="https://example.test", follow_redirects=False)
+    with connect() as con:
+        token = auth.create_magic_link(con, "embargo-subscriber@example.test")
+    login = subscriber.get(f"/auth/{token}")
+    assert login.status_code == 303
+    assert subscriber.get("/p/fresh-house").status_code == 200
+    assert subscriber.get("/o/opening-fresh-embargo").status_code == 200

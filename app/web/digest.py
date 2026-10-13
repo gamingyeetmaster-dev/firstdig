@@ -75,9 +75,12 @@ def send_all(con, send_fn, log=print, dry=False):
             subject = f"{product['name']}: {len(items)} new {'projects' if slug == 'teardown' else 'openings'} in Toronto"
             if dry:
                 log(f"  would send {subject} -> {u['email']}")
-            else:
-                send_fn(u["email"], subject, html, text)
-                auth_store.mark_digest_sent(con, u["id"], slug, today)
+                continue
+            result = send_fn(u["email"], subject, html, text)
+            if not result or not result.get("delivered"):
+                log(f"  digest provider did not accept {slug} for user_id={u['id']}; leaving unsent for retry")
+                continue
+            auth_store.mark_digest_sent(con, u["id"], slug, today)
             sent += 1
-    log(f"  digests: {sent} sent")
+    log(f"  digests: {sent} accepted by provider")
     return sent
