@@ -51,7 +51,7 @@ def render(product, user, items, since):
         if product["slug"] == "teardown":
             lines.append(f"- {it['address']} ({it['neighbourhood']}): {it['headline']} [{it['stage_label']}] {BASE_URL}/p/{quote(it['project_id'])}")
         else:
-            lines.append(f"- {it['name'] or it['category_label']} - {it['address']} ({it['neighbourhood']}), {it['signal_count']} signals {BASE_URL}/o/{quote(it['opening_id'], safe='')}")
+            lines.append(f"- {it['name'] or it['category_label']} - {it['address']} ({it['neighbourhood']}), {it['source_count']} sources / {it['signal_count']} filings {BASE_URL}/o/{quote(it['opening_id'], safe='')}")
     return html, "\n".join(lines)
 
 

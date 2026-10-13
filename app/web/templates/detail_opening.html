@@ -5,7 +5,7 @@
   <p class="small"><a href="/app/openings">← Opening Soon</a></p>
   <div class="head">
     <div>
-      <span class="pill op">{{ o.category_label }}</span> <span class="pill">{{ o.signal_count }} signal{{ '' if o.signal_count == 1 else 's' }}</span>
+      <span class="pill op">{{ o.category_label }}</span> <span class="pill">{{ o.source_count }} source{{ '' if o.source_count == 1 else 's' }}</span> <span class="pill">{{ o.signal_count }} filing{{ '' if o.signal_count == 1 else 's' }}</span>
       <h1 style="font-size:34px;margin-top:10px">{% if o.redacted and o.name %}<span class="value-tag">{{ o.name }}</span>{% else %}{{ o.name or o.category_label }}{% endif %}</h1>
       <p class="muted">{{ o.address }} · {{ o.neighbourhood or o.city }}{% if o.postal %} · {{ o.postal }}{% endif %}</p>
     </div>

@@ -15,13 +15,13 @@
         pointToLayer: (f, latlng) => {
           const p = f.properties;
           const color = kind === "teardown" ? (KIND_COLORS[p.kind] || "#555") : (CAT_COLORS[p.cat] || "#555");
-          return L.circleMarker(latlng, { radius: kind === "teardown" ? 6 : 5 + Math.min(p.signals || 1, 4), color: "#fff", weight: 1, fillColor: color, fillOpacity: 0.9 });
+          return L.circleMarker(latlng, { radius: kind === "teardown" ? 6 : 5 + Math.min(p.sources || 1, 4), color: "#fff", weight: 1, fillColor: color, fillOpacity: 0.9 });
         },
         onEachFeature: (f, l) => {
           const p = f.properties;
           const href = kind === "teardown" ? "/p/" + encodeURIComponent(p.id) : "/o/" + encodeURIComponent(p.id);
           const title = kind === "teardown" ? p.address : (p.name || "");
-          const sub = kind === "teardown" ? p.headline + " · " + p.stage + " · filed " + p.filed : p.address + " · " + p.signals + " signal" + (p.signals > 1 ? "s" : "") + " · " + p.last;
+          const sub = kind === "teardown" ? p.headline + " · " + p.stage + " · filed " + p.filed : p.address + " · " + p.sources + " source" + (p.sources > 1 ? "s" : "") + " · " + p.filings + " filing" + (p.filings > 1 ? "s" : "") + " · " + p.last;
           l.bindPopup("<b>" + esc(title) + "</b><br>" + esc(sub) + "<br><span style='color:#777'>" + esc(p.hood || "") + "</span><br><a href='" + href + "'>Open record →</a>");
         },
       }).addTo(map);

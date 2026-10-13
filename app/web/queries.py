@@ -123,7 +123,7 @@ def opening_filters(args, full_access):
         active["cats"] = cats
     minsig = bounded_int(args.get("minsig"), 1, 1, 20)
     active["minsig"] = minsig
-    where.append("signal_count >= ?")
+    where.append("source_count >= ?")
     params.append(minsig)
     days = bounded_int(args.get("days"), 45, 1, 3650)
     active["days"] = days
@@ -156,6 +156,8 @@ def redact_opening(o, full_access):
     o["category_label"] = CATEGORY_LABELS.get(o["category"], o["category"])
     o["signal_list"] = json.loads(o["signals"] or "[]")
     o["signal_types"] = sorted({s["type"] for s in o["signal_list"]})
+    if o.get("source_count") is None:
+        o["source_count"] = len(o["signal_types"])
     if (o["signal_count"] or 0) > 8 and not o["name"]:
         o["name"] = "Multiple tenants (mall or tower)"
     if not full_access:
@@ -188,7 +190,8 @@ def stats(con):
         "teardowns_30d": con.execute("SELECT count(*) FROM projects WHERE first_filed>=? AND kind IN ('teardown','new_house','multiplex')", (d30,)).fetchone()[0],
         "cost_30d": con.execute("SELECT coalesce(sum(est_cost),0) FROM projects WHERE first_filed>=?", (d30,)).fetchone()[0],
         "openings_30d": con.execute("SELECT count(*) FROM openings WHERE last_signal>=?", (d30,)).fetchone()[0],
-        "openings_multi_30d": con.execute("SELECT count(*) FROM openings WHERE last_signal>=? AND signal_count>=2", (d30,)).fetchone()[0],
+        "openings_multi_filing_30d": con.execute("SELECT count(*) FROM openings WHERE last_signal>=? AND signal_count>=2", (d30,)).fetchone()[0],
+        "openings_multi_30d": con.execute("SELECT count(*) FROM openings WHERE last_signal>=? AND source_count>=2", (d30,)).fetchone()[0],
         "liquor_live": con.execute("SELECT count(*) FROM liquor_apps WHERE deadline>=?", (today.isoformat(),)).fetchone()[0],
         "last_run": con.execute("SELECT value FROM meta WHERE key='last_run'").fetchone(),
     }
