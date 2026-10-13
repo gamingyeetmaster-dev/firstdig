@@ -52,10 +52,10 @@ def setup_module():
         signals = '[{"type":"licence","date":"%s","detail":"business licence"},{"type":"permit","date":"%s","detail":"fit-out"}]' % (old, old)
         con.execute("""INSERT INTO openings(
             opening_id,name,category,address,city,postal,ward,neighbourhood,lat,lon,phone,owner,
-            first_signal,last_signal,signals,signal_count,score,est_cost,description
-        ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+            first_signal,last_signal,signals,signal_count,source_count,score,est_cost,description
+        ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
             ("opening-old","Sample Cafe","restaurant","20 Old St","TORONTO","M4B1B1","1","Leaside",43.72,-79.32,
-             "4165550100","Sample Inc",old,old,signals,2,80,250000,"Restaurant fit-out"))
+             "4165550100","Sample Inc",old,old,signals,2,2,80,250000,"Restaurant fit-out"))
 
 
 def test_public_routes_and_health():
