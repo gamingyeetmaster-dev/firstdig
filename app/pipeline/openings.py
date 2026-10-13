@@ -179,6 +179,11 @@ def load_liquor(con, csv_path, geo, log=print):
 
 # ---------- join ----------
 
+def distinct_source_count(signals):
+    """Count independent public source categories, not repeated filings."""
+    return len({s.get("type") for s in signals if isinstance(s, dict) and s.get("type")})
+
+
 def build_openings(con, log=print):
     cutoff = (dt.date.today() - dt.timedelta(days=LOOKBACK_DAYS)).isoformat()
     groups = defaultdict(lambda: {"signals": [], "names": [], "cats": [], "phone": None, "owner": None,
@@ -280,9 +285,9 @@ def build_openings(con, log=print):
             pass
         out.append((
             key, name, cat, g["address"], g["city"], g["postal"], g["ward"], g["hood"], g["lat"], g["lon"],
-            g["phone"], g["owner"], sigs[0]["date"], last, json.dumps(sigs), len(sigs), score, g["cost"], g["desc"],
+            g["phone"], g["owner"], sigs[0]["date"], last, json.dumps(sigs), len(sigs), distinct_source_count(sigs), score, g["cost"], g["desc"],
         ))
     con.execute("DELETE FROM openings")
-    con.executemany("INSERT INTO openings VALUES (%s)" % ",".join("?" * 19), out)
-    log(f"  openings: {len(out)} joined records ({sum(1 for o in out if o[15] > 1)} with 2+ signals)")
+    con.executemany("INSERT INTO openings VALUES (%s)" % ",".join("?" * 20), out)
+    log(f"  openings: {len(out)} joined records ({sum(1 for o in out if o[16] > 1)} cross-source)")
     return len(out)
