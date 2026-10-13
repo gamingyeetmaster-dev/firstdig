@@ -1,4 +1,5 @@
 """SQLite access and schema. One file, WAL mode, no ORM."""
+import json
 import sqlite3
 from contextlib import contextmanager
 
@@ -72,7 +73,7 @@ CREATE TABLE IF NOT EXISTS openings (
   phone TEXT, owner TEXT,
   first_signal TEXT, last_signal TEXT,
   signals TEXT,                          -- json list of {type,date,detail}
-  signal_count INTEGER, score INTEGER,
+  signal_count INTEGER, source_count INTEGER, score INTEGER,
   est_cost REAL, description TEXT
 );
 CREATE INDEX IF NOT EXISTS ix_open_first ON openings(first_signal);
@@ -115,9 +116,27 @@ def connect():
     return con
 
 
+def _backfill_opening_source_counts(con):
+    """Add and populate source_count without destroying an existing data cache."""
+    columns = {r["name"] for r in con.execute("PRAGMA table_info(openings)")}
+    if "source_count" not in columns:
+        con.execute("ALTER TABLE openings ADD COLUMN source_count INTEGER")
+    rows = con.execute("SELECT opening_id, signals FROM openings WHERE source_count IS NULL").fetchall()
+    updates = []
+    for row in rows:
+        try:
+            signals = json.loads(row["signals"] or "[]")
+        except (TypeError, ValueError, json.JSONDecodeError):
+            signals = []
+        source_count = len({s.get("type") for s in signals if isinstance(s, dict) and s.get("type")})
+        updates.append((source_count, row["opening_id"]))
+    con.executemany("UPDATE openings SET source_count=? WHERE opening_id=?", updates)
+
+
 def init_db():
     with connect() as con:
         con.executescript(SCHEMA)
+        _backfill_opening_source_counts(con)
 
 
 @contextmanager
