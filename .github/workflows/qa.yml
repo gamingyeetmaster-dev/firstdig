@@ -17,7 +17,7 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install -r requirements.txt pytest
-      - run: pytest -q tests/test_app.py
+      - run: pytest -q
 
   live-smoke:
     if: github.event_name != 'pull_request'
@@ -27,6 +27,7 @@ jobs:
     env:
       LIVE_URL: https://first-dig-night-shift.onrender.com
     steps:
+      - uses: actions/checkout@v4
       - name: Wait for public service
         run: |
           set -euo pipefail
@@ -40,7 +41,7 @@ jobs:
       - name: Public route smoke
         run: |
           set -euo pipefail
-          for p in / /teardown /openings /pricing /methodology /terms /app/teardown /app/openings /login /health /robots.txt '/api/teardown.geojson?days=60' '/api/openings.geojson?days=90&minsig=2'; do
+          for p in / /teardown /openings /pricing /methodology /terms /app/teardown /app/openings /login /health /ready /robots.txt '/api/teardown.geojson?days=60' '/api/openings.geojson?days=90&minsig=2'; do
             code=$(curl -L -sS -o /dev/null -w '%{http_code}' --max-time 30 "$LIVE_URL$p")
             test "$code" = "200" || { echo "$p -> $code"; exit 1; }
           done
@@ -48,6 +49,8 @@ jobs:
           test "$head_code" = "200"
           cron_code=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 30 "$LIVE_URL/tasks/refresh?key=wrong")
           test "$cron_code" = "403"
+      - name: Verify fresh nonempty production data
+        run: python scripts/check_health.py
       - name: Security headers
         run: |
           set -euo pipefail
