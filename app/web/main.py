@@ -97,6 +97,14 @@ def require_login(c: Ctx):
         raise HTTPException(status_code=303, headers={"Location": f"/login?next={c.request.url.path}"})
 
 
+def require_data_ready(c: Ctx):
+    """Do not present an empty ephemeral cache as a real empty market."""
+    last = get_meta(c.con, "last_run")
+    projects = c.con.execute("SELECT count(*) FROM projects").fetchone()[0]
+    if not scheduler._data_ready(scheduler._now(), last, projects):
+        raise HTTPException(503, "Data refresh in progress. Please retry shortly.")
+
+
 def safe_next(value, default="/app/teardown"):
     """Allow only same-site absolute paths for post-login redirects."""
     if not value or not value.startswith("/") or value.startswith("//"):
@@ -139,6 +147,7 @@ def product_teardown(c: Ctx = Depends(ctx)):
 
 @app.get("/openings", response_class=HTMLResponse)
 def product_openings(c: Ctx = Depends(ctx)):
+    require_data_ready(c)
     st = queries.stats(c.con)
     items, total, _ = queries.openings(c.con, {"days": 90, "minsig": 2}, False, limit=40)
     by_cat = c.con.execute("SELECT category, count(*) n FROM openings WHERE last_signal >= date('now','-30 days') GROUP BY 1 ORDER BY 2 DESC").fetchall()
@@ -174,6 +183,7 @@ def dash_teardown(c: Ctx = Depends(ctx)):
 
 @app.get("/app/openings", response_class=HTMLResponse)
 def dash_openings(c: Ctx = Depends(ctx)):
+    require_data_ready(c)
     full = c.access["openings"]
     args = dict(c.request.query_params)
     items, total, active = queries.openings(c.con, args, full)
