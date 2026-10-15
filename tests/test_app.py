@@ -104,6 +104,15 @@ def test_public_openings_never_expose_exact_location_or_raw_ids():
     assert anon.get("/o/opening-old").status_code == 404
 
 
+def test_openings_routes_return_503_until_data_ready(monkeypatch):
+    monkeypatch.setattr(scheduler, "_data_ready", lambda now, last_run, projects: False)
+    for path in ("/openings", "/app/openings?days=90&minsig=2"):
+        r = client.get(path)
+        assert r.status_code == 503
+        assert "Data refresh in progress" in r.text
+        assert "0 Businesses" not in r.text
+
+
 def test_magic_link_trial_and_protected_export():
     anon = client.get("/export/teardown.csv")
     assert anon.status_code == 303
