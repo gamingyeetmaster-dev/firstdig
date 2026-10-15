@@ -2,8 +2,10 @@
 name: daily refresh
 on:
   schedule:
-    - cron: "5 10 * * *"   # 06:05 EDT / 05:05 EST
-    - cron: "5 11 * * *"   # 07:05 EDT / 06:05 EST
+    # GitHub warns that start-of-hour load can delay or drop scheduled runs.
+    # Use an off-peak minute while preserving two DST-safe wake windows.
+    - cron: "37 10 * * *"  # 06:37 EDT / 05:37 EST
+    - cron: "37 11 * * *"  # 07:37 EDT / 06:37 EST
   workflow_dispatch:
 jobs:
   wake:
