@@ -59,7 +59,10 @@ BUNDLE_PRICE_MONTHLY = 149
 
 # Source URLs (all public, no auth)
 SOURCES = {
-    "permits_active": "https://ckan0.cf.opendata.inter.prod-toronto.ca/datastore/dump/6d0229af-bc54-46de-9c2b-26759b01dd05",
+    # Toronto's CKAN dump endpoint can inherit the site's row limit when no
+    # explicit limit is supplied. Keep this above the current ~202k rows so a
+    # cold rebuild does not silently accept a partial 80k-row snapshot.
+    "permits_active": "https://ckan0.cf.opendata.inter.prod-toronto.ca/datastore/dump/6d0229af-bc54-46de-9c2b-26759b01dd05?limit=500000",
     "business_licences": "https://ckan0.cf.opendata.inter.prod-toronto.ca/dataset/57b2285f-4f80-45fb-ae3e-41a02c3a137f/resource/54bddc5e-92d9-4102-89c1-43e82f8f4d2d/download/business-licences-data.csv",
     "agco_liquor": "https://www.agco.ca/sites/default/files/opendata/LiquorApplicationsUndergoingPublicNotice.csv",
     "address_points": "https://ckan0.cf.opendata.inter.prod-toronto.ca/dataset/abedd8bc-e3dd-4d45-8e69-79165a76e4fa/resource/64d4e54b-738f-4cd9-a9e7-8050fac8a52f/download/address-points-4326.csv",
