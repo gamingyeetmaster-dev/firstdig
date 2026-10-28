@@ -135,6 +135,12 @@ def test_public_decision_pair_is_real_delayed_and_redacted():
                     "43.72","-79.32"):
         assert private not in r.text
     assert "No signup or payment required" in r.text
+    assert "Toronto sellers whose customers are opening businesses" in r.text
+    assert "not</strong> the residential-contractor test" in r.text
+    assert 'id="falsePositiveReason"' in r.text
+    assert 'name="source-notice"' in r.text
+    assert "mailto:nightshift-labs@agentmail.to" in r.text
+    assert "does not submit the form automatically" in r.text
 
 
 def test_magic_link_trial_and_protected_export():
