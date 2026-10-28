@@ -44,6 +44,7 @@
   {% if pair | length == 2 %}
   <div class="decision-grid">
     {% for o in pair %}
+    {% set record_index = loop.index0 %}
     <article class="decision-record" aria-labelledby="recordHeading{{ loop.index0 }}">
       <p class="decision-kicker">RECORD {{ 'A' if loop.index0 == 0 else 'B' }} / PUBLIC SAMPLE</p>
       <h2 id="recordHeading{{ loop.index0 }}">{{ o.category_label }}</h2>
@@ -56,7 +57,7 @@
       <fieldset class="decision-question">
         <legend>What would you do next?</legend>
         {% for choice, label in [('contact','Consider contacting today'),('research','Research later'),('ignore','Ignore for now')] %}
-        <label class="decision-option"><input type="radio" name="decision-{{ loop.parent.index0 }}" value="{{ choice }}"> {{ label }}</label>
+        <label class="decision-option"><input type="radio" name="decision-{{ record_index }}" value="{{ choice }}"> {{ label }}</label>
         {% endfor %}
       </fieldset>
       <div id="evidence{{ loop.index0 }}" class="decision-evidence" hidden>
