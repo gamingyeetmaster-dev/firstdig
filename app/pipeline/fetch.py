@@ -1,7 +1,9 @@
 """Download the public source files. Each file is cached in data/raw and
 re-downloaded when older than max_age_hours."""
 import csv
+import random
 import time
+from email.utils import parsedate_to_datetime
 from pathlib import Path
 
 import httpx
@@ -25,6 +27,14 @@ MAX_AGE_HOURS = {
     "neighbourhoods": 24 * 30,
 }
 
+# Retry inside one source download so a brief CKAN outage does not force the
+# outer scheduler to wait 30 minutes. Keep this bounded to avoid hammering an
+# already-degraded public service.
+DOWNLOAD_ATTEMPTS = 4
+DOWNLOAD_BACKOFF_SECONDS = (2, 5, 15)
+DOWNLOAD_RETRY_CAP_SECONDS = 30
+TRANSIENT_STATUS_CODES = {408, 429, 500, 502, 503, 504}
+
 # The City described the active-permit resource as containing more than
 # 200,000 rows in September 2026. Its unbounded CKAN dump briefly returned
 # exactly 80,000 rows on 2026-10-16. Fail closed well below the known healthy
@@ -34,6 +44,14 @@ MIN_ACTIVE_PERMIT_ROWS = 100_000
 
 def path_for(key):
     return RAW_DIR / FILES[key]
+
+
+def _cache_age_hours(path):
+    return (time.time() - path.stat().st_mtime) / 3600
+
+
+def _cache_is_fresh(key, path):
+    return path.exists() and _cache_age_hours(path) < MAX_AGE_HOURS[key]
 
 
 def _validate_snapshot(key, path):
@@ -48,22 +66,72 @@ def _validate_snapshot(key, path):
         )
 
 
+def _is_transient(exc):
+    if isinstance(exc, httpx.HTTPStatusError):
+        return exc.response.status_code in TRANSIENT_STATUS_CODES
+    return isinstance(exc, httpx.TransportError)
+
+
+def _retry_after_seconds(exc):
+    if not isinstance(exc, httpx.HTTPStatusError):
+        return None
+    raw = exc.response.headers.get("Retry-After")
+    if not raw:
+        return None
+    try:
+        seconds = float(raw)
+    except ValueError:
+        try:
+            seconds = parsedate_to_datetime(raw).timestamp() - time.time()
+        except (TypeError, ValueError, OverflowError):
+            return None
+    return min(max(seconds, 0), DOWNLOAD_RETRY_CAP_SECONDS)
+
+
+def _retry_delay(exc, retry_index):
+    retry_after = _retry_after_seconds(exc)
+    base = DOWNLOAD_BACKOFF_SECONDS[
+        min(retry_index, len(DOWNLOAD_BACKOFF_SECONDS) - 1)
+    ]
+    delay = max(base, retry_after or 0)
+    jitter = random.uniform(0, min(1.0, delay * 0.1))
+    return min(delay + jitter, DOWNLOAD_RETRY_CAP_SECONDS)
+
+
+def _download(url, tmp, key, log):
+    for attempt in range(DOWNLOAD_ATTEMPTS):
+        try:
+            with httpx.stream(
+                "GET", url, follow_redirects=True, timeout=300
+            ) as response:
+                response.raise_for_status()
+                with open(tmp, "wb") as f:
+                    for chunk in response.iter_bytes(1 << 20):
+                        f.write(chunk)
+            return
+        except Exception as exc:
+            tmp.unlink(missing_ok=True)
+            if attempt + 1 >= DOWNLOAD_ATTEMPTS or not _is_transient(exc):
+                raise
+            delay = _retry_delay(exc, attempt)
+            log(
+                f"  {key}: transient download failure "
+                f"({type(exc).__name__}); retry {attempt + 2}/"
+                f"{DOWNLOAD_ATTEMPTS} in {delay:.1f}s"
+            )
+            time.sleep(delay)
+
+
 def fetch(key, force=False, log=print):
     RAW_DIR.mkdir(parents=True, exist_ok=True)
     dest = path_for(key)
-    if dest.exists() and not force:
-        age_h = (time.time() - dest.stat().st_mtime) / 3600
-        if age_h < MAX_AGE_HOURS[key]:
-            log(f"  {key}: cached ({age_h:.1f}h old)")
-            return dest
+    if _cache_is_fresh(key, dest) and not force:
+        log(f"  {key}: cached ({_cache_age_hours(dest):.1f}h old)")
+        return dest
     url = SOURCES[key]
     log(f"  {key}: downloading {url}")
     tmp = dest.with_suffix(dest.suffix + ".part")
-    with httpx.stream("GET", url, follow_redirects=True, timeout=300) as r:
-        r.raise_for_status()
-        with open(tmp, "wb") as f:
-            for chunk in r.iter_bytes(1 << 20):
-                f.write(chunk)
+    _download(url, tmp, key, log)
     size = tmp.stat().st_size
     if size < 1000:
         tmp.unlink(missing_ok=True)
@@ -83,10 +151,15 @@ def fetch_all(force=False, log=print):
     for key in FILES:
         try:
             out[key] = fetch(key, force=force, log=log)
-        except Exception as e:  # keep going with the cached copy if any
+        except Exception as e:
             log(f"  {key}: FAILED {e}")
-            if path_for(key).exists():
-                out[key] = path_for(key)
+            cached = path_for(key)
+            if _cache_is_fresh(key, cached):
+                log(
+                    f"  {key}: using validated cached copy "
+                    f"({_cache_age_hours(cached):.1f}h old)"
+                )
+                out[key] = cached
             else:
                 raise
     return out
