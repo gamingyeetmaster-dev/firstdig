@@ -59,7 +59,7 @@ def setup_module():
 
 
 def test_public_routes_and_health():
-    for path in ["/","/teardown","/openings","/pricing","/methodology","/terms",
+    for path in ["/","/teardown","/openings","/decision-test","/pricing","/methodology","/terms",
                  "/app/teardown","/app/openings","/login","/health","/robots.txt",
                  "/api/teardown.geojson?days=60","/api/openings.geojson?days=90&minsig=2"]:
         r = client.get(path)
@@ -91,7 +91,7 @@ def test_anonymous_data_is_delayed_and_redacted():
 
 def test_public_openings_never_expose_exact_location_or_raw_ids():
     anon = TestClient(app, base_url="https://example.test", follow_redirects=False)
-    for path in ("/openings", "/app/openings?days=90&minsig=2"):
+    for path in ("/openings", "/decision-test", "/app/openings?days=90&minsig=2"):
         r = anon.get(path)
         assert r.status_code == 200
         assert "opening-old" not in r.text
@@ -111,6 +111,30 @@ def test_openings_routes_return_503_until_data_ready(monkeypatch):
         assert r.status_code == 503
         assert "Data refresh in progress" in r.text
         assert "0 Businesses" not in r.text
+
+
+def test_public_decision_pair_is_real_delayed_and_redacted():
+    old = (dt.date.today() - dt.timedelta(days=30)).isoformat()
+    single_signals = '[{"type":"licence","date":"%s","detail":"licence a"},{"type":"licence","date":"%s","detail":"licence b"}]' % (old, old)
+    with connect() as con:
+        con.execute("""INSERT OR REPLACE INTO openings(
+            opening_id,name,category,address,city,postal,ward,neighbourhood,lat,lon,phone,owner,
+            first_signal,last_signal,signals,signal_count,source_count,score,est_cost,description
+        ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+            ("single-source-example","Another Cafe","restaurant","30 Secret St","TORONTO",
+             "M4B1B1","1","Leaside",43.7,-79.2,"4165550199","Private Owner",
+             old,old,single_signals,2,1,52,0,"Two filings from a single source"))
+    anon = TestClient(app, base_url="https://example.test", follow_redirects=False)
+    r = anon.get("/decision-test")
+    assert r.status_code == 200, r.text[:300]
+    assert "RECORD A" in r.text and "RECORD B" in r.text
+    assert "1 distinct source category" in r.text
+    assert "2 distinct source categories" in r.text
+    for private in ("Another Cafe","Sample Cafe","30 Secret St","20 Old St",
+                    "4165550199","Private Owner","single-source-example","opening-old",
+                    "43.72","-79.32"):
+        assert private not in r.text
+    assert "No signup or payment required" in r.text
 
 
 def test_magic_link_trial_and_protected_export():
