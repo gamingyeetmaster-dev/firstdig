@@ -68,7 +68,10 @@ def main():
     if local.hour < 6:
         print(f"PRE-06 TORONTO WARM-UP: liveness wake only ({local.isoformat()})")
         return 0
-    attempts = int(os.environ.get("FIRSTDIG_HEALTH_ATTEMPTS", "8"))
+    # A cold free-instance rebuild can take six minutes: Oct 27's full recovery
+    # completed after the old eight-check window expired. Keep a bounded
+    # verification window, without ever treating HTTP 200 as data readiness.
+    attempts = int(os.environ.get("FIRSTDIG_HEALTH_ATTEMPTS", "12"))
     interval = int(os.environ.get("FIRSTDIG_HEALTH_INTERVAL_SECONDS", "40"))
     for i in range(1, attempts + 1):
         try:
