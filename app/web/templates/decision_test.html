@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% set product = PRODUCTS.openings %}
-{% block title %}The 60-second decision test · First Dig{% endblock %}
-{% block desc %}Compare two real, privacy-safe public filing examples and decide whether either warrants a sales follow-up.{% endblock %}
+{% block title %}The five-minute supplier decision test · First Dig{% endblock %}
+{% block desc %}A consent-based comparison for Toronto suppliers deciding which newly opening businesses deserve follow-up.{% endblock %}
 {% block head %}
 <style>
 /* A quiet, useful comparison workspace: no manufactured conversion scores. */
@@ -35,10 +35,11 @@
 {% block body %}
 <section><div class="wrap">
   <header class="decision-intro">
-    <p class="decision-kicker">FIRST DIG / UNCOACHED PRODUCT TEST / 01</p>
-    <h1>Would you pursue either of these businesses?</h1>
-    <p>These are <strong>real, delayed Toronto public-filing records</strong>, not confirmed openings, clients or sales leads. Imagine you sell services to new businesses. Look at each record, decide whether you would investigate it, then reveal what the sources actually tell us.</p>
-    <p class="muted small">Names, street numbers and contact information stay hidden. Your answers stay in your browser unless you choose to copy them and share them yourself. No signup or payment required.</p>
+    <p class="decision-kicker">FIRST DIG / OPENING SOON / CONSENT-BASED TEST</p>
+    <h1>Which new business would you pursue?</h1>
+    <p>This five-minute comparison is for Toronto sellers whose customers are opening businesses—for example POS/payments, signage, commercial insurance or business telecom. It is <strong>not</strong> the residential-contractor test for First Dig's separate Teardown Feed.</p>
+    <p>These are <strong>real, delayed Toronto public-filing records</strong>, not confirmed openings, clients or sales leads. Decide what you would do before revealing whether each record repeats one source or combines multiple source categories.</p>
+    <p class="muted small">Names, street numbers and contact information stay hidden. Your answers stay in your browser unless you deliberately copy or email them. No signup or payment required.</p>
   </header>
 
   {% if pair | length == 2 %}
@@ -79,13 +80,23 @@
       <textarea id="decisiveField" maxlength="500" placeholder="For example: recency, business category, source corroboration, geography…"></textarea>
     </label>
     <label>What's the single missing fact you would need before contacting anyone?
-      <textarea id="missingField" maxlength="500" placeholder="For example: whether the business is still hiring contractors…"></textarea>
+      <textarea id="missingField" maxlength="500" placeholder="For example: opening date, decision-maker role, build-out status…"></textarea>
     </label>
+    <label>What would make either record a false positive for your sales process?
+      <textarea id="falsePositiveReason" maxlength="500" placeholder="For example: this may be a renewal, relocation or business that already chose a supplier…"></textarea>
+    </label>
+    <fieldset class="decision-question">
+      <legend>After revealing the evidence, did you notice the difference between more filings and more distinct source categories?</legend>
+      {% for choice, label in [('yes','Yes'),('no','No'),('unsure','Unsure')] %}
+      <label class="decision-option"><input type="radio" name="source-notice" value="{{ choice }}"> {{ label }}</label>
+      {% endfor %}
+    </fieldset>
     <div class="decision-actions">
       <button id="copyDecision" type="button" class="btn primary">Copy my feedback</button>
+      <a id="emailDecision" class="btn ghost" href="mailto:nightshift-labs@agentmail.to?subject=First%20Dig%20decision-test%20feedback">Email my feedback voluntarily</a>
       <span id="decisionStatus" class="small muted" role="status" aria-live="polite"></span>
     </div>
-    <p class="small muted">Copying does not send anything. If you share your feedback with First Dig, do not include personal details or identifying information about yourself or other people.</p>
+    <p class="small muted">Copying sends nothing. Emailing is optional and opens your own mail app; First Dig does not submit the form automatically. Do not include personal details or identifying information about yourself or other people.</p>
   </section>
   {% else %}
   <article class="decision-record">
@@ -118,17 +129,27 @@
     reveal.disabled = true;
     reveal.textContent = "Evidence revealed";
   });
-  document.querySelector("#copyDecision").addEventListener("click", async () => {
-    const text = [
-      "First Dig voluntary public decision test",
+  const feedbackText = () => {
+    const notice = document.querySelector('input[name="source-notice"]:checked')?.value || "Not provided";
+    return [
+      "First Dig voluntary Opening Soon supplier decision test",
       "Record A: " + selected(0) + " (" + times[0] + "s since opening)",
       "Record B: " + selected(1) + " (" + times[1] + "s since opening)",
-      "Decisive field: " + (document.querySelector("#decisiveField").value.trim() || "Not provided").slice(0,500),
+      "Decisive evidence: " + (document.querySelector("#decisiveField").value.trim() || "Not provided").slice(0,500),
       "Missing field: " + (document.querySelector("#missingField").value.trim() || "Not provided").slice(0,500),
+      "False-positive reason: " + (document.querySelector("#falsePositiveReason").value.trim() || "Not provided").slice(0,500),
+      "Noticed filing-volume vs source-diversity difference: " + notice,
       "No personal data collected by this page."
     ].join("\n");
+  };
+  document.querySelector("#copyDecision").addEventListener("click", async () => {
+    const text = feedbackText();
     try { await navigator.clipboard.writeText(text); document.querySelector("#decisionStatus").textContent = "Feedback copied. Nothing was sent."; }
-    catch { const el=document.createElement("textarea");el.value=text;el.style.width="100%";el.rows=7;document.querySelector("#feedbackPanel").append(el);el.focus();el.select();document.querySelector("#decisionStatus").textContent="Copy the selected text manually; nothing was sent."; }
+    catch { const el=document.createElement("textarea");el.value=text;el.style.width="100%";el.rows=8;document.querySelector("#feedbackPanel").append(el);el.focus();el.select();document.querySelector("#decisionStatus").textContent="Copy the selected text manually; nothing was sent."; }
+  });
+  document.querySelector("#emailDecision").addEventListener("click", event => {
+    event.currentTarget.href = "mailto:nightshift-labs@agentmail.to?subject=" +
+      encodeURIComponent("First Dig decision-test feedback") + "&body=" + encodeURIComponent(feedbackText());
   });
 })();
 </script>
