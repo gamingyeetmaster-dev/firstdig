@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+{% set product = PRODUCTS.openings %}
+{% block title %}The 60-second decision test · First Dig{% endblock %}
+{% block desc %}Compare two real, privacy-safe public filing examples and decide whether either warrants a sales follow-up.{% endblock %}
+{% block head %}
+<style>
+/* A quiet, useful comparison workspace: no manufactured conversion scores. */
+.decision-intro { max-width:820px; padding:52px 0 20px }
+.decision-kicker { font:700 12px var(--mono); letter-spacing:.08em; text-transform:uppercase; color:var(--op-ink) }
+.decision-intro h1 { font:800 clamp(38px,5.5vw,68px)/.98 var(--disp); letter-spacing:-.03em; margin:10px 0 18px }
+.decision-intro p { max-width:690px; color:var(--ink-2) }
+.decision-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; margin:24px 0 }
+.decision-record { background:var(--surface); border:1px solid var(--rule); padding:24px; min-width:0 }
+.decision-record h2 { font:800 26px var(--disp); margin:4px 0 14px; letter-spacing:-.015em }
+.decision-record dl { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); column-gap:18px; margin:18px 0 }
+.decision-record dt { color:var(--ink-3); font:700 11px var(--mono); text-transform:uppercase; margin-bottom:2px }
+.decision-record dd { margin:0 0 14px; font-size:15px; overflow-wrap:anywhere }
+.decision-question { border-top:2px solid var(--ink); padding-top:15px; margin-top:10px }
+.decision-question legend { font-weight:700; margin-bottom:12px }
+.decision-option { display:block; padding:10px 12px; margin:6px 0; border:1px solid var(--rule); cursor:pointer; font-size:14px }
+.decision-option:has(input:checked){border-color:var(--op); background:var(--op-wash)}
+.decision-option input { margin-right:8px; accent-color:var(--op) }
+.decision-evidence { padding:15px; background:var(--surface-2); border-left:3px solid var(--op); margin-top:16px; font-size:14px }
+.decision-evidence[hidden], #feedbackPanel[hidden] { display:none }
+.decision-evidence p {margin:.4rem 0}
+.decision-actions { display:flex; gap:12px; flex-wrap:wrap; margin:14px 0 }
+.decision-actions button:disabled {opacity:.45;cursor:not-allowed}
+.decision-feedback { border-top:1px solid var(--rule); margin-top:26px; padding-top:20px }
+.decision-feedback label {display:block;font-weight:700;font-size:14px;margin:14px 0}
+.decision-feedback textarea {display:block;width:100%;margin-top:8px;min-height:76px;padding:10px;background:var(--surface);color:var(--ink);border:1px solid var(--rule);font:14px var(--body)}
+.decision-feedback .small { max-width:680px }
+@media(max-width:740px){.decision-grid{grid-template-columns:1fr}.decision-intro{padding-top:26px}.decision-record{padding:17px}}
+</style>
+{% endblock %}
+{% block body %}
+<section><div class="wrap">
+  <header class="decision-intro">
+    <p class="decision-kicker">FIRST DIG / UNCOACHED PRODUCT TEST / 01</p>
+    <h1>Would you pursue either of these businesses?</h1>
+    <p>These are <strong>real, delayed Toronto public-filing records</strong>, not confirmed openings, clients or sales leads. Imagine you sell services to new businesses. Look at each record, decide whether you would investigate it, then reveal what the sources actually tell us.</p>
+    <p class="muted small">Names, street numbers and contact information stay hidden. Your answers stay in your browser unless you choose to copy them and share them yourself. No signup or payment required.</p>
+  </header>
+
+  {% if pair | length == 2 %}
+  <div class="decision-grid">
+    {% for o in pair %}
+    <article class="decision-record" aria-labelledby="recordHeading{{ loop.index0 }}">
+      <p class="decision-kicker">RECORD {{ 'A' if loop.index0 == 0 else 'B' }} / PUBLIC SAMPLE</p>
+      <h2 id="recordHeading{{ loop.index0 }}">{{ o.category_label }}</h2>
+      <dl>
+        <div><dt>Area</dt><dd>{{ o.neighbourhood or o.city or 'Not on file' }}</dd></div>
+        <div><dt>Street (number hidden)</dt><dd>{{ o.address or 'Not on file' }}</dd></div>
+        <div><dt>Last public filing</dt><dd>{{ o.last_signal | nice_date }}</dd></div>
+        <div><dt>Number of filings</dt><dd>{{ o.signal_count }}</dd></div>
+      </dl>
+      <fieldset class="decision-question">
+        <legend>What would you do next?</legend>
+        {% for choice, label in [('contact','Consider contacting today'),('research','Research later'),('ignore','Ignore for now')] %}
+        <label class="decision-option"><input type="radio" name="decision-{{ loop.parent.index0 }}" value="{{ choice }}"> {{ label }}</label>
+        {% endfor %}
+      </fieldset>
+      <div id="evidence{{ loop.index0 }}" class="decision-evidence" hidden>
+        <b>{{ o.source_count }} distinct source categor{{ 'y' if o.source_count == 1 else 'ies' }}</b> across {{ o.signal_count }} filing{{ '' if o.signal_count == 1 else 's' }}.
+        <p>Recorded source types: {{ o.signal_types | join(' + ') }}.</p>
+        <p class="muted small">Multiple filings from one source are not independent corroboration. Multiple sources still do not prove that a business will open, or buy anything.</p>
+      </div>
+    </article>
+    {% endfor %}
+  </div>
+  <div class="decision-actions">
+    <button class="btn primary" type="button" id="revealEvidence" disabled>Choose an action for both records to reveal evidence</button>
+    <a class="btn ghost" href="/openings">Explore the public feed</a>
+  </div>
+  <section id="feedbackPanel" class="decision-feedback" hidden>
+    <h2>What made you decide?</h2>
+    <p>Different source categories can make a record more trustworthy—or sometimes they don't matter. We need to learn which evidence actually affects your decision.</p>
+    <label>Which field mattered most to you?
+      <textarea id="decisiveField" maxlength="500" placeholder="For example: recency, business category, source corroboration, geography…"></textarea>
+    </label>
+    <label>What's the single missing fact you would need before contacting anyone?
+      <textarea id="missingField" maxlength="500" placeholder="For example: whether the business is still hiring contractors…"></textarea>
+    </label>
+    <div class="decision-actions">
+      <button id="copyDecision" type="button" class="btn primary">Copy my feedback</button>
+      <span id="decisionStatus" class="small muted" role="status" aria-live="polite"></span>
+    </div>
+    <p class="small muted">Copying does not send anything. If you share your feedback with First Dig, do not include personal details or identifying information about yourself or other people.</p>
+  </section>
+  {% else %}
+  <article class="decision-record">
+    <h2>No suitable comparison pair is available right now.</h2>
+    <p>Both a repeated-single-source example and a cross-source example are required. We won't invent one. Try again after the next public-data refresh.</p>
+    <a class="btn" href="/openings">Browse the existing public feed</a>
+  </article>
+  {% endif %}
+</div></section>
+{% endblock %}
+{% block scripts %}
+{% if pair | length == 2 %}
+<script>
+(() => {
+  const reveal = document.querySelector("#revealEvidence");
+  const choices = [0,1].map(i => [...document.querySelectorAll('input[name="decision-' + i + '"]')]);
+  const start = performance.now();
+  const times = [null,null];
+  const selected = i => choices[i].find(input => input.checked)?.value;
+  choices.forEach((group,i) => group.forEach(input => input.addEventListener("change", () => {
+    if(times[i] === null) times[i] = Math.round((performance.now()-start)/1000);
+    reveal.disabled = !selected(0) || !selected(1);
+    if(!reveal.disabled) reveal.textContent="Reveal the filing evidence";
+  })));
+  reveal.addEventListener("click", () => {
+    if(reveal.disabled) return;
+    document.querySelector("#evidence0").hidden = false;
+    document.querySelector("#evidence1").hidden = false;
+    document.querySelector("#feedbackPanel").hidden = false;
+    reveal.disabled = true;
+    reveal.textContent = "Evidence revealed";
+  });
+  document.querySelector("#copyDecision").addEventListener("click", async () => {
+    const text = [
+      "First Dig voluntary public decision test",
+      "Record A: " + selected(0) + " (" + times[0] + "s since opening)",
+      "Record B: " + selected(1) + " (" + times[1] + "s since opening)",
+      "Decisive field: " + (document.querySelector("#decisiveField").value.trim() || "Not provided").slice(0,500),
+      "Missing field: " + (document.querySelector("#missingField").value.trim() || "Not provided").slice(0,500),
+      "No personal data collected by this page."
+    ].join("\n");
+    try { await navigator.clipboard.writeText(text); document.querySelector("#decisionStatus").textContent = "Feedback copied. Nothing was sent."; }
+    catch { const el=document.createElement("textarea");el.value=text;el.style.width="100%";el.rows=7;document.querySelector("#feedbackPanel").append(el);el.focus();el.select();document.querySelector("#decisionStatus").textContent="Copy the selected text manually; nothing was sent."; }
+  });
+})();
+</script>
+{% endif %}
+{% endblock %}
