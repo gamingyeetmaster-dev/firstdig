@@ -154,6 +154,25 @@ def product_openings(c: Ctx = Depends(ctx)):
     return render(c, "product_openings.html", stats=st, items=items, total=total, by_cat=by_cat, categories=queries.categories())
 
 
+@app.get("/decision-test", response_class=HTMLResponse)
+def decision_test(c: Ctx = Depends(ctx)):
+    """Anonymous, delayed, privacy-safe evidence test: never expose subscriber fields."""
+    require_data_ready(c)
+    # Use the same delayed/redacted query as the public Opening Soon listing.
+    records, _, _ = queries.openings(c.con, {"days": 365, "minsig": 1}, False, limit=1000)
+    repeated = [r for r in records if r["source_count"] == 1 and r["signal_count"] >= 2]
+    corroborated = [r for r in records if r["source_count"] >= 2]
+    pair = []
+    if repeated and corroborated:
+        first = next((r for r in repeated if any(
+            other["category"] == r["category"] for other in corroborated
+        )), repeated[0])
+        second = next((r for r in corroborated if r["category"] == first["category"]), corroborated[0])
+        # Alternate order by date to avoid always giving the corroborated record position B.
+        pair = [first, second] if dt.date.today().toordinal() % 2 else [second, first]
+    return render(c, "decision_test.html", pair=pair)
+
+
 @app.get("/pricing", response_class=HTMLResponse)
 def pricing(c: Ctx = Depends(ctx)):
     return render(c, "pricing.html")
