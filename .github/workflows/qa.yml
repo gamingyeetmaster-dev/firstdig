@@ -38,10 +38,27 @@ jobs:
           done
           echo "public service never returned 200"
           exit 1
+      - name: Wait for fresh, nonempty production data
+        run: |
+          set -euo pipefail
+          # A free Render instance can restart with an empty ephemeral data cache.
+          # /health returning 200 proves the web process is alive, NOT ready.
+          # /ready only becomes 200 when data is fresh and has nonempty projects.
+          for i in $(seq 1 36); do
+            code=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 20 "$LIVE_URL/ready" || true)
+            if [ "$code" = "200" ]; then
+              echo "PASS: /ready confirmed fresh nonempty data"
+              exit 0
+            fi
+            echo "Data not ready ($code); check $i/36"
+            sleep 12
+          done
+          echo "FAIL: production never became data-ready"
+          exit 1
       - name: Public route smoke
         run: |
           set -euo pipefail
-          for p in / /teardown /openings /pricing /methodology /terms /app/teardown /app/openings /login /health /ready /robots.txt '/api/teardown.geojson?days=60' '/api/openings.geojson?days=90&minsig=2'; do
+          for p in / /teardown /openings /decision-test /pricing /methodology /terms /app/teardown /app/openings /login /health /ready /robots.txt '/api/teardown.geojson?days=60' '/api/openings.geojson?days=90&minsig=2'; do
             code=$(curl -L -sS -o /dev/null -w '%{http_code}' --max-time 30 "$LIVE_URL$p")
             test "$code" = "200" || { echo "$p -> $code"; exit 1; }
           done
