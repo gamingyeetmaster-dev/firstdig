@@ -20,7 +20,7 @@ os.environ["ADMIN_EMAILS"] = ""
 
 from fastapi.testclient import TestClient
 from app.db import connect, init_db, set_meta
-from app.web import auth
+from app.web import auth, queries
 from app.web import marketing_brief, scheduler
 from app.web.main import app
 
@@ -89,6 +89,32 @@ def test_anonymous_data_is_delayed_and_redacted():
     assert "20 Old St" not in str(data)
 
 
+
+def test_public_address_redaction_removes_civic_fractional_and_unit_identifiers():
+    base = {
+        "category": "restaurant",
+        "signals": "[]",
+        "source_count": 0,
+        "signal_count": 1,
+        "name": "Private Name",
+        "phone": "4165550100",
+        "owner": "Private Owner",
+        "lat": 43.7,
+        "lon": -79.3,
+    }
+    cases = {
+        "123 Midland Ave, #5": "Midland Ave (number hidden)",
+        "123 1/2 Carlton St, B": "Carlton St (number hidden)",
+        "5-123 Yonge St, Unit 9": "Yonge St (number hidden)",
+        "88A Queen St W": "Queen St W (number hidden)",
+        "77 King St W #12": "King St W (number hidden)",
+    }
+    for raw, expected in cases.items():
+        redacted = queries.redact_opening({**base, "address": raw}, False)
+        assert redacted["address"] == expected
+        assert redacted["lat"] is None and redacted["lon"] is None
+
+
 def test_public_openings_never_expose_exact_location_or_raw_ids():
     anon = TestClient(app, base_url="https://example.test", follow_redirects=False)
     for path in ("/openings", "/decision-test", "/app/openings?days=90&minsig=2"):
@@ -121,7 +147,7 @@ def test_public_decision_pair_is_real_delayed_and_redacted():
             opening_id,name,category,address,city,postal,ward,neighbourhood,lat,lon,phone,owner,
             first_signal,last_signal,signals,signal_count,source_count,score,est_cost,description
         ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
-            ("single-source-example","Another Cafe","restaurant","30 Secret St","TORONTO",
+            ("single-source-example","Another Cafe","restaurant","30 Secret St, #5","TORONTO",
              "M4B1B1","1","Leaside",43.7,-79.2,"4165550199","Private Owner",
              old,old,single_signals,2,1,52,0,"Two filings from a single source"))
     anon = TestClient(app, base_url="https://example.test", follow_redirects=False)
@@ -130,10 +156,11 @@ def test_public_decision_pair_is_real_delayed_and_redacted():
     assert "RECORD A" in r.text and "RECORD B" in r.text
     assert "1 distinct source category" in r.text
     assert "2 distinct source categories" in r.text
-    for private in ("Another Cafe","Sample Cafe","30 Secret St","20 Old St",
+    for private in ("Another Cafe","Sample Cafe","30 Secret St, #5","Secret St, #5","20 Old St",
                     "4165550199","Private Owner","single-source-example","opening-old",
                     "43.72","-79.32"):
         assert private not in r.text
+    assert "Secret St (number hidden)" in r.text
     assert "No signup or payment required" in r.text
     assert "Toronto sellers whose customers are opening businesses" in r.text
     assert "not</strong> the residential-contractor test" in r.text
