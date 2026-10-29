@@ -170,6 +170,23 @@ def decision_test(c: Ctx = Depends(ctx)):
         second = next((r for r in corroborated if r["category"] == first["category"]), corroborated[0])
         # Alternate order by date to avoid always giving the corroborated record position B.
         pair = [first, second] if dt.date.today().toordinal() % 2 else [second, first]
+        for record in pair:
+            trail = []
+            for source_type in record["signal_types"]:
+                source = config.PUBLIC_SOURCE_PAGES.get(source_type)
+                if not source:
+                    continue
+                filings = [
+                    signal for signal in record["signal_list"]
+                    if signal.get("type") == source_type
+                ]
+                dates = [signal.get("date") for signal in filings if signal.get("date")]
+                trail.append({
+                    **source,
+                    "filing_count": len(filings),
+                    "latest_filing": max(dates) if dates else None,
+                })
+            record["public_source_trail"] = trail
     return render(c, "decision_test.html", pair=pair)
 
 

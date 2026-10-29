@@ -23,6 +23,8 @@
 .decision-evidence { padding:15px; background:var(--surface-2); border-left:3px solid var(--op); margin-top:16px; font-size:14px }
 .decision-evidence[hidden], #feedbackPanel[hidden] { display:none }
 .decision-evidence p {margin:.4rem 0}
+.decision-sources {margin:.6rem 0;padding-left:1.2rem}
+.decision-sources li {margin:.35rem 0}
 .decision-actions { display:flex; gap:12px; flex-wrap:wrap; margin:14px 0 }
 .decision-actions button:disabled {opacity:.45;cursor:not-allowed}
 .decision-feedback { border-top:1px solid var(--rule); margin-top:26px; padding-top:20px }
@@ -63,7 +65,13 @@
       </fieldset>
       <div id="evidence{{ loop.index0 }}" class="decision-evidence" hidden>
         <b>{{ o.source_count }} distinct source categor{{ 'y' if o.source_count == 1 else 'ies' }}</b> across {{ o.signal_count }} filing{{ '' if o.signal_count == 1 else 's' }}.
-        <p>Recorded source types: {{ o.signal_types | join(' + ') }}.</p>
+        <p>Official source trail:</p>
+        <ul class="decision-sources">
+          {% for source in o.public_source_trail %}
+          <li><a href="{{ source.url }}" target="_blank" rel="noopener noreferrer">{{ source.label }}</a>
+            &mdash; {{ source.filing_count }} filing{{ '' if source.filing_count == 1 else 's' }}{% if source.latest_filing %}, latest {{ source.latest_filing | nice_date }}{% endif %}</li>
+          {% endfor %}
+        </ul>
         <p class="muted small">Multiple filings from one source are not independent corroboration. Multiple sources still do not prove that a business will open, or buy anything.</p>
       </div>
     </article>

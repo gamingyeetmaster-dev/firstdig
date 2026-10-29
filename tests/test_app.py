@@ -164,6 +164,13 @@ def test_public_decision_pair_is_real_delayed_and_redacted():
     assert "No signup or payment required" in r.text
     assert "Toronto sellers whose customers are opening businesses" in r.text
     assert "not</strong> the residential-contractor test" in r.text
+    assert "Official source trail" in r.text
+    assert "City business licences and permits" in r.text
+    assert "City active building permits" in r.text
+    assert "https://open.toronto.ca/dataset/building-permits-active-permits/" in r.text
+    assert "https://open.toronto.ca/dataset/municipal-licensing-and-standards-business-licences-and-permits/" in r.text
+    assert "2 filings, latest" in r.text
+    assert 'target="_blank" rel="noopener noreferrer"' in r.text
     assert 'id="falsePositiveReason"' in r.text
     assert 'name="source-notice"' in r.text
     assert "mailto:nightshift-labs@agentmail.to" in r.text
