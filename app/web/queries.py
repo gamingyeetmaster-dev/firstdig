@@ -1,6 +1,7 @@
 """Read-side queries shared by pages, API, CSV export and digests."""
 import datetime as dt
 import json
+import re
 
 from ..config import FREE_DELAY_DAYS
 from ..pipeline.openings import CATEGORY_LABELS
@@ -152,6 +153,30 @@ def openings(con, args, full_access, limit=500):
     return [redact_opening(dict(r), full_access) for r in rows], total, active
 
 
+
+def redact_street_address(address):
+    """Keep only a public-safe street name; remove civic and unit identifiers."""
+    if not address:
+        return None
+    # Unit/suite fragments commonly follow a comma and remain identifying even
+    # after the first whitespace-delimited token is removed.
+    street = address.split(",", 1)[0].strip()
+    # Remove civic numbers, ranges, suffix letters and fractional additions,
+    # including forms such as 88A, 5-123 and 123 1/2.
+    street = re.sub(
+        r"^\s*\d+[A-Za-z]?(?:-\d+[A-Za-z]?)?(?:\s+\d+/\d+)?\s+",
+        "",
+        street,
+    )
+    # Some feeds append a unit without a comma.
+    street = re.sub(
+        r"\s+(?:#\s*[A-Za-z0-9-]+|(?:unit|suite|apt|apartment)\s+[A-Za-z0-9-]+)\s*$",
+        "",
+        street,
+        flags=re.IGNORECASE,
+    ).strip()
+    return f"{street} (number hidden)" if street else "Street hidden (number hidden)"
+
 def redact_opening(o, full_access):
     o["category_label"] = CATEGORY_LABELS.get(o["category"], o["category"])
     o["signal_list"] = json.loads(o["signals"] or "[]")
@@ -164,9 +189,8 @@ def redact_opening(o, full_access):
         o["name"] = REDACTED if o["name"] else None
         o["phone"] = REDACTED if o["phone"] else None
         o["owner"] = REDACTED if o["owner"] else None
-        # keep street, hide the number
-        if o["address"]:
-            o["address"] = " ".join(o["address"].split(" ")[1:]) + " (number hidden)"
+        # Keep a useful street label without leaking civic, fractional or unit identifiers.
+        o["address"] = redact_street_address(o["address"])
         # Exact coordinates identify the street number even after the address is
         # redacted. Never pass them into anonymous templates or JSON responses.
         o["lat"] = None
