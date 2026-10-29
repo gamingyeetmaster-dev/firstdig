@@ -1,5 +1,23 @@
 # First Dig: Toronto permit intelligence case study
 
+## October 29 update: technically live, commercially unproven
+
+**Latest observed First Dig production sample:** readiness was `ready=true` and `fresh=true`, with `last_run=2026-10-29T04:13:16Z` and **6,734 project records** after recovery from an ephemeral-host cold start. This count describes processed Toronto project records, **not** prospects reached, users, customers, paid leads, or revenue. It is a dated observation, not an uptime guarantee.
+
+Recent public, auditable changes:
+
+- [PR #17](https://github.com/gamingyeetmaster-dev/firstdig/pull/17) built a self-serve, anonymous comparison using two real, delayed/redacted Opening Soon records. A visitor must decide which is worth contacting before the source-diversity evidence is revealed.
+- [PR #20](https://github.com/gamingyeetmaster-dev/firstdig/pull/20) corrected the target persona to suppliers who sell to newly opening businesses and made feedback an optional, user-initiated return. An existing feature is not a completed user study.
+- [PR #21](https://github.com/gamingyeetmaster-dev/firstdig/pull/21) added bounded retries for transient public-data fetch failures, without accepting stale snapshots as fresh.
+- [PR #22](https://github.com/gamingyeetmaster-dev/firstdig/pull/22) fixed anonymous address-fragment leaks involving units, fractions, ranges and suffixes. Focused browser QA saw redacted Midland/Carlton street labels and working two-step reveal gating.
+- [CI run 40793726411](https://github.com/gamingyeetmaster-dev/firstdig/actions/runs/40793726411) passed `app-tests`; `live-smoke` was skipped, so CI does not by itself prove active deployment.
+
+**Honest commercial status:** 0 verified buyer-decision responses; 0 verified paying customers; no collected revenue. Active Render deployment identity and no-email recovery logs remain unverified without a user-confirmed workspace. The production application still reports `auth_store=sqlite`, so persistence and account migration remain gated by [issue #12](https://github.com/gamingyeetmaster-dev/firstdig/issues/12). Do not infer that current production can safely charge or send subscription email.
+
+**The next milestone is not another feature:** [one genuine Opening Soon buyer test and a real paid pilot](https://github.com/gamingyeetmaster-dev/firstdig/issues/23). First Dig is now being evaluated on buyer decisions and cash collected rather than the size of its codebase.
+
+---
+
 **Status as of October 13, 2026:** live technical prototype. No customer adoption, revenue, partnership, or accuracy benchmark is claimed.
 
 [Open the live application](https://first-dig-night-shift.onrender.com) · [View the source](https://github.com/gamingyeetmaster-dev/firstdig)
