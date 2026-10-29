@@ -68,3 +68,21 @@ SOURCES = {
     "address_points": "https://ckan0.cf.opendata.inter.prod-toronto.ca/dataset/abedd8bc-e3dd-4d45-8e69-79165a76e4fa/resource/64d4e54b-738f-4cd9-a9e7-8050fac8a52f/download/address-points-4326.csv",
     "neighbourhoods": "https://ckan0.cf.opendata.inter.prod-toronto.ca/dataset/fc443770-ef0a-4025-9c2c-2cb558bfab00/resource/0719053b-28b7-48ea-b863-068823a93aaa/download/neighbourhoods-4326.geojson",
 }
+
+# Buyer-facing provenance for the anonymous Opening Soon decision test. These
+# links identify the official public datasets without exposing a record ID or
+# another identifier that could reverse the test's address redaction.
+PUBLIC_SOURCE_PAGES = {
+    "permit": {
+        "label": "City active building permits",
+        "url": "https://open.toronto.ca/dataset/building-permits-active-permits/",
+    },
+    "licence": {
+        "label": "City business licences and permits",
+        "url": "https://open.toronto.ca/dataset/municipal-licensing-and-standards-business-licences-and-permits/",
+    },
+    "liquor": {
+        "label": "AGCO liquor applications under public notice",
+        "url": SOURCES["agco_liquor"],
+    },
+}
