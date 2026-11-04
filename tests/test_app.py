@@ -139,6 +139,21 @@ def test_openings_routes_return_503_until_data_ready(monkeypatch):
         assert "0 Businesses" not in r.text
 
 
+def test_decision_test_waits_fail_closed_then_auto_continues(monkeypatch):
+    monkeypatch.setattr(scheduler, "_data_ready", lambda now, last_run, projects: False)
+    r = client.get("/decision-test")
+    assert r.status_code == 503
+    assert "Preparing the real comparison" in r.text
+    assert "empty, stale or partial result" in r.text
+    assert 'fetch("/ready"' in r.text
+    assert 'window.location.replace("/decision-test")' in r.text
+    assert "state.ready === true" in r.text
+    assert "state.fresh === true" in r.text
+    assert "state.projects > 0" in r.text
+    for private in ("Another Cafe", "Sample Cafe", "20 Old St", "4165550100", "Private Owner"):
+        assert private not in r.text
+
+
 def test_public_decision_pair_is_real_delayed_and_redacted():
     old = (dt.date.today() - dt.timedelta(days=30)).isoformat()
     single_signals = '[{"type":"licence","date":"%s","detail":"licence a"},{"type":"licence","date":"%s","detail":"licence b"}]' % (old, old)
