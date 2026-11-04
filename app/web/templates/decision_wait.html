@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% set product = PRODUCTS.openings %}
+{% block title %}Preparing the supplier decision test · First Dig{% endblock %}
+{% block desc %}First Dig is rebuilding its complete Toronto public-data sample before showing the supplier decision test.{% endblock %}
+{% block head %}
+<style>
+.wait-shell { min-height:58vh; display:grid; place-items:center; padding:52px 0 }
+.wait-card { width:min(680px,100%); background:var(--surface); border:1px solid var(--rule); padding:clamp(24px,5vw,48px) }
+.wait-kicker { font:700 12px var(--mono); letter-spacing:.08em; text-transform:uppercase; color:var(--op-ink) }
+.wait-card h1 { font:800 clamp(34px,5vw,58px)/1 var(--disp); letter-spacing:-.03em; margin:10px 0 18px }
+.wait-card p { max-width:590px; color:var(--ink-2) }
+.wait-status { display:flex; align-items:center; gap:10px; margin:24px 0 18px; font-weight:700 }
+.wait-dot { width:10px; height:10px; border-radius:50%; background:var(--op); animation:pulse 1.4s ease-in-out infinite }
+.wait-actions { display:flex; gap:12px; align-items:center; flex-wrap:wrap }
+@keyframes pulse { 50% { opacity:.3; transform:scale(.75) } }
+@media (prefers-reduced-motion:reduce) { .wait-dot { animation:none } }
+</style>
+{% endblock %}
+{% block body %}
+<section><div class="wrap wait-shell">
+  <article class="wait-card" aria-labelledby="waitHeading">
+    <p class="wait-kicker">FIRST DIG / OPENING SOON / CONSENT-BASED TEST</p>
+    <h1 id="waitHeading">Preparing the real comparison.</h1>
+    <p>The service is rebuilding its complete Toronto public-data sample. First Dig stays closed until every required source is fresh, so it will not show an empty, stale or partial result.</p>
+    <p>Keep this tab open. The decision test will continue automatically when the verified sample is ready. No signup, payment or personal information is required.</p>
+    <div class="wait-status" role="status" aria-live="polite">
+      <span class="wait-dot" aria-hidden="true"></span>
+      <span id="waitMessage">Checking data readiness…</span>
+    </div>
+    <div class="wait-actions">
+      <button class="btn primary" type="button" id="checkNow">Check now</button>
+      <a class="btn ghost" href="/methodology">How the data is verified</a>
+    </div>
+    <p class="small muted">This page checks only First Dig's readiness endpoint. It does not submit or store participant feedback.</p>
+  </article>
+</div></section>
+{% endblock %}
+{% block scripts %}
+<script>
+(() => {
+  const message = document.querySelector("#waitMessage");
+  const button = document.querySelector("#checkNow");
+  let attempts = 0;
+  let timer;
+
+  const schedule = () => {
+    clearTimeout(timer);
+    timer = setTimeout(checkReady, Math.min(15000, 5000 + attempts * 1000));
+  };
+
+  async function checkReady() {
+    clearTimeout(timer);
+    attempts += 1;
+    button.disabled = true;
+    message.textContent = "Checking the complete dataset…";
+    try {
+      const response = await fetch("/ready", {cache:"no-store", credentials:"same-origin"});
+      const state = await response.json();
+      if (response.ok && state.ready === true && state.fresh === true && state.projects > 0) {
+        message.textContent = "Verified sample ready. Opening the test…";
+        window.location.replace("/decision-test");
+        return;
+      }
+      message.textContent = "Still rebuilding safely. This tab will keep checking.";
+    } catch (_) {
+      message.textContent = "The readiness check was interrupted. Trying again automatically.";
+    } finally {
+      button.disabled = false;
+    }
+    schedule();
+  }
+
+  button.addEventListener("click", checkReady);
+  checkReady();
+})();
+</script>
+{% endblock %}
