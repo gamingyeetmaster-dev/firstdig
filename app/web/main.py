@@ -84,12 +84,12 @@ def ctx(request: Request):
         c.close()
 
 
-def render(c: Ctx, name, **kw):
+def render(c: Ctx, name, status_code=200, **kw):
     kw.setdefault("user", c.user)
     kw.setdefault("access", c.access)
     kw.setdefault("is_admin", c.is_admin)
     kw.setdefault("last_run", get_meta(c.con, "last_run"))
-    return templates.TemplateResponse(c.request, name, kw)
+    return templates.TemplateResponse(c.request, name, kw, status_code=status_code)
 
 
 def require_login(c: Ctx):
@@ -97,11 +97,16 @@ def require_login(c: Ctx):
         raise HTTPException(status_code=303, headers={"Location": f"/login?next={c.request.url.path}"})
 
 
-def require_data_ready(c: Ctx):
-    """Do not present an empty ephemeral cache as a real empty market."""
+def data_ready(c: Ctx):
+    """Return whether the complete ephemeral dataset is safe to present."""
     last = get_meta(c.con, "last_run")
     projects = c.con.execute("SELECT count(*) FROM projects").fetchone()[0]
-    if not scheduler._data_ready(scheduler._now(), last, projects):
+    return scheduler._data_ready(scheduler._now(), last, projects)
+
+
+def require_data_ready(c: Ctx):
+    """Do not present an empty ephemeral cache as a real empty market."""
+    if not data_ready(c):
         raise HTTPException(503, "Data refresh in progress. Please retry shortly.")
 
 
@@ -157,7 +162,12 @@ def product_openings(c: Ctx = Depends(ctx)):
 @app.get("/decision-test", response_class=HTMLResponse)
 def decision_test(c: Ctx = Depends(ctx)):
     """Anonymous, delayed, privacy-safe evidence test: never expose subscriber fields."""
-    require_data_ready(c)
+    if not data_ready(c):
+        # A permissioned participant should not have to discover when a free
+        # instance has finished rebuilding. This page remains HTTP 503 and
+        # exposes no records; it only advances after /ready passes the same
+        # complete-dataset predicate used by this route.
+        return render(c, "decision_wait.html", status_code=503)
     # Use the same delayed/redacted query as the public Opening Soon listing.
     records, _, _ = queries.openings(c.con, {"days": 365, "minsig": 1}, False, limit=1000)
     repeated = [r for r in records if r["source_count"] == 1 and r["signal_count"] >= 2]
